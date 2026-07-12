@@ -1,0 +1,19 @@
+{
+  "name": "fundflow-ai",
+  "private": true,
+  "workspaces": [
+    "apps/web",
+    "packages/*"
+  ],
+  "scripts": {
+    "dev": "npm run dev --workspace @fundflow/web",
+    "build": "npm run build --workspace @fundflow/web",
+    "lint": "npm run lint --workspace @fundflow/web",
+    "typecheck": "npm run typecheck --workspace @fundflow/web"
+  },
+  "engines": {
+    "node": ">=20.11.0",
+    "npm": ">=10.0.0"
+  }
+}
+

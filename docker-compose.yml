@@ -1,0 +1,53 @@
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: fundflow-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-fundflow}
+      POSTGRES_USER: ${POSTGRES_USER:-fundflow}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-fundflow_dev_password}
+    ports:
+      - "${POSTGRES_PORT:-5432}:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./infra/postgres/init.sql:/docker-entrypoint-initdb.d/init.sql:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-fundflow} -d ${POSTGRES_DB:-fundflow}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  api:
+    build:
+      context: .
+      dockerfile: infra/docker/api.Dockerfile
+    container_name: fundflow-api
+    restart: unless-stopped
+    env_file:
+      - apps/api/.env.example
+    environment:
+      DATABASE_URL: postgresql+psycopg://${POSTGRES_USER:-fundflow}:${POSTGRES_PASSWORD:-fundflow_dev_password}@postgres:5432/${POSTGRES_DB:-fundflow}
+      ALEMBIC_DATABASE_URL: postgresql+psycopg://${POSTGRES_USER:-fundflow}:${POSTGRES_PASSWORD:-fundflow_dev_password}@postgres:5432/${POSTGRES_DB:-fundflow}
+    ports:
+      - "${API_PORT:-8000}:8000"
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+  web:
+    build:
+      context: .
+      dockerfile: infra/docker/web.Dockerfile
+    container_name: fundflow-web
+    restart: unless-stopped
+    env_file:
+      - apps/web/.env.example
+    ports:
+      - "${WEB_PORT:-3000}:3000"
+    depends_on:
+      - api
+
+volumes:
+  postgres_data:
+
