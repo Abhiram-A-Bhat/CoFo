@@ -111,10 +111,10 @@ export function SignupForm() {
           name="password"
           type="password"
           required
-          minLength={12}
+          minLength={8}
           value={password}
           onChange={(e) => setPassword(e.target.value)}
-          placeholder="Min 12 characters"
+          placeholder="Min 8 characters with 1 capital"
           className="w-full rounded-xl border border-white/[0.08] bg-white/[0.04] px-4 py-3 text-[14px] text-white placeholder:text-white/20 outline-none focus:border-emerald-500/50 focus:ring-2 focus:ring-emerald-500/10 transition-all"
         />
       </div>

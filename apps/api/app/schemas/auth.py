@@ -7,7 +7,7 @@ from app.schemas.user import UserPublic
 
 class RegisterRequest(BaseModel):
     email: EmailStr
-    password: str = Field(min_length=12, max_length=128)
+    password: str = Field(min_length=8, max_length=128)
     full_name: str | None = Field(default=None, max_length=255)
     role: Literal["founder", "investor"] = "founder"
     investment_interests: list[str] = Field(default_factory=list, max_length=12)
@@ -15,12 +15,8 @@ class RegisterRequest(BaseModel):
     @field_validator("password")
     @classmethod
     def validate_password_strength(cls, value: str) -> str:
-        if not any(character.islower() for character in value):
-            raise ValueError("Password must include a lowercase letter.")
         if not any(character.isupper() for character in value):
-            raise ValueError("Password must include an uppercase letter.")
-        if not any(character.isdigit() for character in value):
-            raise ValueError("Password must include a number.")
+            raise ValueError("Password must include at least one capital (uppercase) letter.")
         return value
 
     @field_validator("investment_interests")
