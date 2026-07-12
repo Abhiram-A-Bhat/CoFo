@@ -14,13 +14,35 @@ from app.db.base import Base
 import app.models
 from app.db.session import engine
 
+import sys
+import traceback
+from fastapi.exceptions import RequestValidationError
+from starlette.exceptions import HTTPException as StarletteHTTPException
+
 app = FastAPI(title="FundFlow AI API")
+
+@app.exception_handler(StarletteHTTPException)
+async def http_exception_handler(request: Request, exc: StarletteHTTPException):
+    print(f"DEBUG: StarletteHTTPException caught! status_code={exc.status_code}, detail={exc.detail}", file=sys.stderr)
+    return Response(content=str(exc.detail), status_code=exc.status_code)
+
+@app.exception_handler(RequestValidationError)
+async def validation_exception_handler(request: Request, exc: RequestValidationError):
+    print(f"DEBUG: RequestValidationError caught! errors={exc.errors()}", file=sys.stderr)
+    return Response(content=str(exc.errors()), status_code=400)
+
+@app.exception_handler(Exception)
+async def universal_exception_handler(request: Request, exc: Exception):
+    print(f"DEBUG: Unhandled exception caught! {exc}", file=sys.stderr)
+    traceback.print_exc(file=sys.stderr)
+    return Response(content="Internal Server Error", status_code=500)
+
 
 
 @app.on_event("startup")
 def on_startup():
-    if settings.database_url.startswith("sqlite"):
-        Base.metadata.create_all(bind=engine)
+    # Ensure all tables are created (including in production PostgreSQL)
+    Base.metadata.create_all(bind=engine)
 
 
 class SecurityHeadersMiddleware(BaseHTTPMiddleware):

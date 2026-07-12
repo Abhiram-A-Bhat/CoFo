@@ -32,6 +32,12 @@ class Settings(BaseSettings):
     @field_validator("backend_cors_origins", mode="before")
     @classmethod
     def parse_cors_origins(cls, value: str | list[str]) -> list[str] | str:
+        import os
+        # If default value is present or empty, check if CORS_ORIGINS is set in environment
+        if not value or value == ["http://localhost:3000"]:
+            env_cors = os.getenv("CORS_ORIGINS")
+            if env_cors:
+                value = env_cors
         if isinstance(value, str) and value:
             return [origin.strip() for origin in value.split(",")]
         return value
