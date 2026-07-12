@@ -8,14 +8,12 @@ const nextConfig: NextConfig = {
   typescript: {
     ignoreBuildErrors: true,
   },
-  experimental: {
-    outputFileTracingExcludes: {
-      "*": [
-        "../../apps/api/**",
-        "../../node_modules/@swc/**",
-        "../../node_modules/esbuild/**",
-      ],
-    },
+  outputFileTracingExcludes: {
+    "*": [
+      "../../apps/api/**",
+      "../../node_modules/@swc/**",
+      "../../node_modules/esbuild/**",
+    ],
   },
   async headers() {
     return [
