@@ -165,7 +165,7 @@ export function StartupProfileForm() {
           try {
             const parsed = JSON.parse(savedDraft);
             setProfile({ ...loadedForm, ...parsed });
-          } catch (e) {
+          } catch (_) {
             setProfile(loadedForm);
           }
         } else {
@@ -182,7 +182,7 @@ export function StartupProfileForm() {
           if (savedDraft && isMounted) {
             try {
               setProfile(JSON.parse(savedDraft));
-            } catch (e) {}
+            } catch (_) {}
           }
           return;
         }

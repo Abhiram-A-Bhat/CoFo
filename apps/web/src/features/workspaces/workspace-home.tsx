@@ -35,7 +35,7 @@ export function WorkspaceHome({ eyebrow, title, body, links }: WorkspaceHomeProp
       try {
         const res = await apiClient.get<Announcement[]>("/auth/announcements");
         setAnnouncements(res.data);
-      } catch (err) {
+      } catch (_) {
         // Suppress auth or fetch errors silently
       }
     }

@@ -355,7 +355,7 @@ export default function HomePage() {
             with clarity?
           </h2>
           <p className="mx-auto mt-6 max-w-md text-[16px] text-white/40 leading-relaxed">
-            Join founders and investors who've replaced messy spreadsheets and cold outreach with a focused, structured workspace.
+            Join founders and investors who&apos;ve replaced messy spreadsheets and cold outreach with a focused, structured workspace.
           </p>
           <div className="mt-10 flex flex-col sm:flex-row items-center justify-center gap-3">
             <Link
