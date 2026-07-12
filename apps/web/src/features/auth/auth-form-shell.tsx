@@ -23,9 +23,9 @@ export function AuthFormShell({
       {/* Mobile-only logo */}
       <div className="mb-8 flex items-center gap-2.5 lg:hidden">
         <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-white font-black text-[#0a0a0a] text-sm">
-          CF
+          BC
         </div>
-        <span className="text-[15px] font-semibold text-white">CoFo</span>
+        <span className="text-[15px] font-semibold text-white">BridgeCapita</span>
       </div>
 
       {/* Heading */}

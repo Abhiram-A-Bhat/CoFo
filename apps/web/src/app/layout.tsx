@@ -3,7 +3,7 @@ import type { ReactNode } from "react";
 import "@/styles/globals.css";
 
 export const metadata: Metadata = {
-  title: "CoFo",
+  title: "BridgeCapita",
   description: "Pitch-perfect connections for founders and investors"
 };
 

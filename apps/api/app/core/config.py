@@ -5,7 +5,7 @@ from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
 class Settings(BaseSettings):
-    app_name: str = "FundFlow AI"
+    app_name: str = "BridgeCapita"
     app_env: str = "local"
     api_v1_prefix: str = "/api/v1"
     backend_cors_origins: list[str] = ["http://localhost:3000"]

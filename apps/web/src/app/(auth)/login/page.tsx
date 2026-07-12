@@ -7,7 +7,7 @@ export default function LoginPage() {
       description="Enter your credentials to continue to your fundraising workspace."
       footerHref="/signup"
       footerLinkText="Create an account"
-      footerText="New to CoFo?"
+      footerText="New to BridgeCapita?"
       title="Welcome back"
     >
       <LoginForm />

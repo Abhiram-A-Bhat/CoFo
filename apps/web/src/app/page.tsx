@@ -69,7 +69,7 @@ const testimonials = [
   },
   {
     quote:
-      "As an early-stage investor, I see a lot of noise. CoFo filters it down to deals that actually fit my thesis.",
+      "As an early-stage investor, I see a lot of noise. BridgeCapita filters it down to deals that actually fit my thesis.",
     name: "Anika Sharma",
     role: "Partner, Inflection Capital",
     avatar: "AS",
@@ -85,7 +85,7 @@ const testimonials = [
 
 const faqs = [
   {
-    q: "Who is CoFo built for?",
+    q: "Who is BridgeCapita built for?",
     a: "Startup founders actively raising capital and investors — angels, VCs, and family offices — who want a sharper deal discovery workflow.",
   },
   {
@@ -98,7 +98,7 @@ const faqs = [
   },
   {
     q: "How is this different from LinkedIn?",
-    a: "LinkedIn is a network. CoFo is a workflow tool. We focus entirely on the fundraising process — structured profiles, ranked discovery, and warm introductions in one place.",
+    a: "LinkedIn is a network. BridgeCapita is a workflow tool. We focus entirely on the fundraising process — structured profiles, ranked discovery, and warm introductions in one place.",
   },
 ];
 
@@ -114,9 +114,9 @@ export default function HomePage() {
           {/* Logo */}
           <Link href="/" className="flex items-center gap-2.5">
             <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-white text-[#0a0a0a] font-black text-sm tracking-tighter select-none">
-              CF
+              BC
             </div>
-            <span className="text-[15px] font-semibold tracking-tight">CoFo</span>
+            <span className="text-[15px] font-semibold tracking-tight">BridgeCapita</span>
           </Link>
 
           {/* Nav links */}
@@ -168,7 +168,7 @@ export default function HomePage() {
           </h1>
 
           <p className="mx-auto mt-7 max-w-xl text-[17px] leading-relaxed text-white/50">
-            CoFo connects founders and investors through structured profiles, ranked discovery, and direct messaging — in one focused workspace.
+            BridgeCapita connects founders and investors through structured profiles, ranked discovery, and direct messaging — in one focused workspace.
           </p>
 
           <div className="mt-10 flex flex-col sm:flex-row items-center justify-center gap-3">
@@ -379,12 +379,12 @@ export default function HomePage() {
         <div className="mx-auto flex max-w-7xl flex-col items-center justify-between gap-4 sm:flex-row">
           <div className="flex items-center gap-2.5">
             <div className="flex h-7 w-7 items-center justify-center rounded-md bg-white text-[#0a0a0a] font-black text-xs">
-              CF
+              BC
             </div>
-            <span className="text-[13px] font-medium text-white/40">CoFo</span>
+            <span className="text-[13px] font-medium text-white/40">BridgeCapita</span>
           </div>
           <p className="text-[12px] text-white/25">
-            © {new Date().getFullYear()} CoFo. All rights reserved.
+            © {new Date().getFullYear()} BridgeCapita. All rights reserved.
           </p>
           <div className="flex items-center gap-6 text-[12px] text-white/30">
             <a href="#features" className="hover:text-white/60 transition-colors">Features</a>

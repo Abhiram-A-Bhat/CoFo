@@ -19,7 +19,7 @@ import traceback
 from fastapi.exceptions import RequestValidationError
 from starlette.exceptions import HTTPException as StarletteHTTPException
 
-app = FastAPI(title="FundFlow AI API")
+app = FastAPI(title="BridgeCapita API")
 
 @app.exception_handler(StarletteHTTPException)
 async def http_exception_handler(request: Request, exc: StarletteHTTPException):

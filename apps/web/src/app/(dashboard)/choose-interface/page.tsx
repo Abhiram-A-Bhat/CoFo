@@ -40,7 +40,7 @@ export default function ChooseInterfacePage() {
             Choose interface
           </div>
           <h1 className="text-4xl font-semibold tracking-normal sm:text-6xl">
-            How do you want to use CoFo today?
+            How do you want to use BridgeCapita today?
           </h1>
           <p className="text-sm leading-7 text-muted-foreground sm:text-base">
             Select the workspace that matches your role. You can return here after login

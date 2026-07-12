@@ -15,9 +15,9 @@ export default function AuthLayout({ children }: { children: ReactNode }) {
         {/* Logo */}
         <Link href="/" className="flex items-center gap-2.5">
           <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-white font-black text-[#0a0a0a] text-sm tracking-tighter">
-            CF
+            BC
           </div>
-          <span className="text-[15px] font-semibold tracking-tight text-white">CoFo</span>
+          <span className="text-[15px] font-semibold tracking-tight text-white">BridgeCapita</span>
         </Link>
 
         {/* Centre copy */}
@@ -59,7 +59,7 @@ export default function AuthLayout({ children }: { children: ReactNode }) {
 
         {/* Footnote */}
         <div className="text-[11px] text-white/20">
-          CoFo Workspace Integration
+          BridgeCapita Workspace Integration
         </div>
       </div>
 

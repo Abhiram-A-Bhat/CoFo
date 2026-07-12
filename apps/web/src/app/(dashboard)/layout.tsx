@@ -206,9 +206,9 @@ export default function DashboardLayout({ children }: { children: ReactNode }) {
           {/* Logo */}
           <Link href="/pitch-feed" className="flex items-center gap-2.5 px-3">
             <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-white text-[#0a0a0a] font-black text-sm tracking-tighter">
-              CF
+              BC
             </div>
-            <span className="text-[15px] font-semibold tracking-tight text-white">CoFo</span>
+            <span className="text-[15px] font-semibold tracking-tight text-white">BridgeCapita</span>
           </Link>
 
           {/* Nav Items */}

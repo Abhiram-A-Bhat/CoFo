@@ -100,7 +100,7 @@ export function PitchFeedPage() {
       <div className="flex flex-col gap-4 border-b border-white/[0.08] pb-6">
         <div>
           <span className="text-xs font-bold uppercase tracking-widest text-emerald-400">
-            CoFo Shorts
+            BridgeCapita Shorts
           </span>
           <h1 className="text-3xl font-bold tracking-tight text-white mt-1">Pitch Feed</h1>
         </div>
