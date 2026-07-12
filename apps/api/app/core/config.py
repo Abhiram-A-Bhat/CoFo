@@ -39,16 +39,19 @@ class Settings(BaseSettings):
     @field_validator("auth_cookie_samesite")
     @classmethod
     def validate_cookie_samesite(cls, value: str) -> str:
-        normalized = value.lower()
+        if not value:
+            return "lax"
+        normalized = value.strip().strip("'\"").lower()
         if normalized not in {"lax", "strict", "none"}:
-            raise ValueError("AUTH_COOKIE_SAMESITE must be lax, strict, or none.")
+            raise ValueError(f"AUTH_COOKIE_SAMESITE must be lax, strict, or none. Got: '{value}'")
         return normalized
 
     @model_validator(mode="after")
     def validate_production_security(self) -> "Settings":
-        if self.app_env.lower() not in {"local", "development", "test"}:
+        env_val = self.app_env.strip().strip("'\"").lower()
+        if env_val not in {"local", "development", "test"}:
             if len(self.jwt_secret_key) < 32:
-                raise ValueError("JWT_SECRET_KEY must be a strong production secret.")
+                raise ValueError("JWT_SECRET_KEY must be a strong production secret (minimum 32 chars).")
             if not self.auth_cookie_secure:
                 raise ValueError("AUTH_COOKIE_SECURE must be true outside local development.")
         return self
