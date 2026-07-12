@@ -21,6 +21,10 @@ export function LoginForm() {
 
     try {
       const response = await login({ email, password });
+      
+      if (response?.token?.access_token) {
+        localStorage.setItem("fundflow_access_token", response.token.access_token);
+      }
 
       const saved = localStorage.getItem("fundflow_active_workspace");
       if (saved === "investor" || (response.user.role === "investor" && !saved)) {

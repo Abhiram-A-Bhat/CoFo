@@ -43,6 +43,11 @@ export function SignupForm() {
         role,
         investment_interests: role === "investor" ? investmentInterests : []
       });
+      
+      if (auth?.token?.access_token) {
+        localStorage.setItem("fundflow_access_token", auth.token.access_token);
+      }
+      
       router.push("/choose-interface");
       router.refresh();
     } catch (caughtError) {

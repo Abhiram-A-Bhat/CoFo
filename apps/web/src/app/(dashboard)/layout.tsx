@@ -75,6 +75,9 @@ export default function DashboardLayout({ children }: { children: ReactNode }) {
   const handleLogout = async () => {
     try {
       await logout();
+      if (typeof window !== "undefined") {
+        localStorage.removeItem("fundflow_access_token");
+      }
       router.push("/login");
     } catch (err) {
       console.error("Logout failed:", err);
