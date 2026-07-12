@@ -54,9 +54,22 @@ class Settings(BaseSettings):
         return self
 
 
+import sys
+from pydantic import ValidationError
+
 @lru_cache
 def get_settings() -> Settings:
-    return Settings()
+    try:
+        return Settings()
+    except ValidationError as e:
+        print("\n=======================================================", file=sys.stderr)
+        print("❌ CONFIGURATION ERROR: Failed to load application settings.", file=sys.stderr)
+        print("Please check your environment variables on Render:", file=sys.stderr)
+        for error in e.errors():
+            loc = " -> ".join(str(x) for x in error["loc"])
+            print(f"  - {loc}: {error['msg']}", file=sys.stderr)
+        print("=======================================================\n", file=sys.stderr)
+        sys.exit(1)
 
 
 settings = get_settings()
