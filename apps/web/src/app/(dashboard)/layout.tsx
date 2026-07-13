@@ -233,22 +233,7 @@ export default function DashboardLayout({ children }: { children: ReactNode }) {
             })}
           </nav>
           
-          {/* Activity Feed Widget */}
-          <div className="pt-4 border-t border-white/[0.06] space-y-3 px-3">
-            <span className="text-[10px] font-bold uppercase tracking-wider text-emerald-400/80 block">Activity Feed</span>
-            <div className="space-y-2.5 max-h-[160px] overflow-y-auto no-scrollbar">
-              {[
-                { label: "Investor viewed your startup profile", time: "2m ago" },
-                { label: "New investor match found", time: "1h ago" },
-                { label: "Traction credentials verified", time: "1d ago" },
-              ].map((activity, i) => (
-                <div key={i} className="text-[11px] leading-snug space-y-0.5">
-                  <p className="text-white/70 font-medium">{activity.label}</p>
-                  <span className="text-[9px] text-white/30 block">{activity.time}</span>
-                </div>
-              ))}
-            </div>
-          </div>
+
         </div>
 
         {/* Bottom Actions & User Profile */}
