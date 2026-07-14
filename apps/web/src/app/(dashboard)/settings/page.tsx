@@ -56,7 +56,7 @@ export default function SettingsPage() {
         setFullName(currentUser.full_name || "");
         setEmail(currentUser.email);
       } catch (err) {
-        setError(getApiErrorMessage(err));
+        setError(getApiErrorMessage(err, "Failed to load profile details"));
       } finally {
         setLoading(false);
       }
@@ -76,7 +76,7 @@ export default function SettingsPage() {
       // Fire window storage event to alert sidebar to update user full_name instantly
       window.dispatchEvent(new Event("storage"));
     } catch (err) {
-      setError(getApiErrorMessage(err));
+      setError(getApiErrorMessage(err, "Failed to update profile settings"));
     } finally {
       setIsSaving(false);
     }
@@ -115,7 +115,7 @@ export default function SettingsPage() {
       setNewPassword("");
       setConfirmPassword("");
     } catch (err) {
-      setError(getApiErrorMessage(err));
+      setError(getApiErrorMessage(err, "Failed to update password"));
     } finally {
       setIsSaving(false);
     }
@@ -129,7 +129,7 @@ export default function SettingsPage() {
       }
       router.push("/login");
     } catch (err) {
-      setError(getApiErrorMessage(err));
+      setError(getApiErrorMessage(err, "Failed to log out"));
     }
   };
 
