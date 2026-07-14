@@ -55,3 +55,14 @@ export async function updateMyPreferences(payload: { active_workspace: "founder"
   const response = await apiClient.patch<AuthUser>("/auth/me/preferences", payload);
   return response.data;
 }
+
+export type UpdateProfilePayload = {
+  full_name?: string;
+  password?: string;
+};
+
+export async function updateProfile(payload: UpdateProfilePayload) {
+  const response = await apiClient.patch<AuthUser>("/auth/me", payload);
+  return response.data;
+}
+

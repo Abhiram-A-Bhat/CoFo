@@ -11,7 +11,8 @@ import {
   User, 
   ShieldAlert, 
   LogOut, 
-  RefreshCw
+  RefreshCw,
+  Settings
 } from "lucide-react";
 
 import { getMe, logout, updateMyPreferences, type AuthUser } from "@/lib/api/auth";
@@ -185,6 +186,7 @@ export default function DashboardLayout({ children }: { children: ReactNode }) {
     { label: "Matches", href: "/matching", icon: Sparkles },
     { label: "Messages", href: "/messages", icon: MessageSquare },
     { label: "Profile", href: profilePath, icon: User },
+    { label: "Settings", href: "/settings", icon: Settings },
   ];
 
   if (user?.role === "admin") {
@@ -238,17 +240,6 @@ export default function DashboardLayout({ children }: { children: ReactNode }) {
 
         {/* Bottom Actions & User Profile */}
         <div className="space-y-4">
-          {/* Workspace Toggle button */}
-          <button
-            onClick={handleWorkspaceToggle}
-            className="flex w-full items-center gap-3 rounded-xl border border-white/10 bg-white/[0.03] hover:bg-white/[0.06] px-4 py-3 text-[12px] font-semibold text-white/80 transition-all duration-200"
-          >
-            <RefreshCw className="h-3.5 w-3.5 text-emerald-400 animate-spin" style={{ animationDuration: "10s" }} />
-            <span className="truncate">
-              Switch to {workspace === "founder" ? "Investor" : "Founder"}
-            </span>
-          </button>
-
           {/* User Account / Logout */}
           <div className="border-t border-white/[0.06] pt-4">
             <div className="flex items-center justify-between px-3 py-2">
@@ -276,8 +267,30 @@ export default function DashboardLayout({ children }: { children: ReactNode }) {
         </div>
       </aside>
 
+      {/* Mobile Top Header */}
+      <header className="fixed top-0 left-0 right-0 z-40 flex h-14 items-center justify-between border-b border-white/[0.06] bg-[#0a0a0a]/80 backdrop-blur-xl px-4 md:hidden">
+        <Link href="/pitch-feed" className="flex items-center gap-2.5">
+          <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-white text-[#0a0a0a] font-black text-xs">
+            BC
+          </div>
+          <span className="text-[14px] font-semibold text-white">BridgeCapita</span>
+        </Link>
+        <div className="flex items-center gap-3">
+          <Link href="/settings" className="text-white/60 hover:text-white p-1 rounded-lg hover:bg-white/[0.04] transition-colors">
+            <Settings className="h-4 w-4" />
+          </Link>
+          <button
+            onClick={handleLogout}
+            className="text-white/60 hover:text-red-400 p-1 rounded-lg hover:bg-white/[0.04] transition-colors"
+            title="Log out"
+          >
+            <LogOut className="h-4 w-4" />
+          </button>
+        </div>
+      </header>
+
       {/* Main Content Area */}
-      <main className="relative z-10 flex-1 md:pl-64 pb-20 md:pb-0">
+      <main className="relative z-10 flex-1 md:pl-64 pb-20 md:pb-0 pt-14 md:pt-0">
         <div className={`mx-auto px-4 py-6 md:px-8 transition-all duration-300 ${
           pathname.includes("pitch-feed") || pathname.includes("startup-discovery")
             ? "max-w-6xl"
@@ -305,14 +318,8 @@ export default function DashboardLayout({ children }: { children: ReactNode }) {
             </Link>
           );
         })}
-        <button
-          onClick={handleWorkspaceToggle}
-          className="flex flex-col items-center justify-center flex-1 py-2 text-[10px] text-emerald-400"
-        >
-          <RefreshCw className="h-4 w-4 mb-1 text-emerald-400 animate-spin" style={{ animationDuration: "10s" }} />
-          <span>Switch</span>
-        </button>
       </nav>
+
       <CommandPalette />
     </div>
   );

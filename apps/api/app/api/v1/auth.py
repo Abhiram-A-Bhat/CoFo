@@ -9,9 +9,10 @@ from app.core.cookies import clear_access_token_cookie, set_access_token_cookie
 from app.core.rate_limit import AuthRateLimit
 from app.db.session import get_db
 from app.models.user import User
-from app.schemas.auth import AuthResponse, LoginRequest, LogoutResponse, RegisterRequest
+from app.schemas.auth import AuthResponse, LoginRequest, LogoutResponse, RegisterRequest, UpdateProfileRequest
 from app.schemas.user import UserPublic
 from app.services.auth import authenticate_user, logout_user, register_user
+from app.core.security import hash_password
 
 router = APIRouter(prefix="/auth", tags=["auth"])
 
@@ -20,6 +21,21 @@ router = APIRouter(prefix="/auth", tags=["auth"])
 def read_current_user(
     current_user: Annotated[User, Depends(get_current_user)],
 ) -> UserPublic:
+    return current_user
+
+
+@router.patch("/me", response_model=UserPublic)
+def update_current_user(
+    payload: UpdateProfileRequest,
+    current_user: Annotated[User, Depends(get_current_user)],
+    db: Annotated[Session, Depends(get_db)],
+) -> UserPublic:
+    if payload.full_name is not None:
+        current_user.full_name = payload.full_name
+    if payload.password is not None:
+        current_user.hashed_password = hash_password(payload.password)
+    db.commit()
+    db.refresh(current_user)
     return current_user
 
 

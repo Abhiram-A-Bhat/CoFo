@@ -48,3 +48,18 @@ class AuthResponse(BaseModel):
 
 class LogoutResponse(BaseModel):
     message: str
+
+
+class UpdateProfileRequest(BaseModel):
+    full_name: str | None = Field(default=None, max_length=255)
+    password: str | None = Field(default=None, min_length=8, max_length=128)
+
+    @field_validator("password")
+    @classmethod
+    def validate_password_strength(cls, value: str | None) -> str | None:
+        if value is None:
+            return value
+        if not any(character.isupper() for character in value):
+            raise ValueError("Password must include at least one capital (uppercase) letter.")
+        return value
+
