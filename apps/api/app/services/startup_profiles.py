@@ -67,10 +67,25 @@ async def save_my_pitch_video(
     upload_dir.mkdir(parents=True, exist_ok=True)
     filename = f"{uuid4()}{extension}"
     destination = upload_dir / filename
+    previous_pitch_video_url = startup_profile.pitch_video_url
 
     total_bytes = 0
+    has_valid_signature = False
     with destination.open("wb") as output:
         while chunk := await file.read(1024 * 1024):
+            if total_bytes == 0:
+                has_valid_signature = _has_valid_video_signature(
+                    chunk,
+                    content_type=file.content_type,
+                )
+                if not has_valid_signature:
+                    output.close()
+                    destination.unlink(missing_ok=True)
+                    raise HTTPException(
+                        status_code=status.HTTP_415_UNSUPPORTED_MEDIA_TYPE,
+                        detail="Uploaded file does not match the declared video type.",
+                    )
+
             total_bytes += len(chunk)
             if total_bytes > settings.max_pitch_video_bytes:
                 output.close()
@@ -80,6 +95,13 @@ async def save_my_pitch_video(
                     detail="Pitch videos must be 150 MB or smaller.",
                 )
             output.write(chunk)
+
+    if total_bytes == 0 or not has_valid_signature:
+        destination.unlink(missing_ok=True)
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Pitch video upload is empty or invalid.",
+        )
 
     pitch_video_url = (
         f"{settings.public_media_path}/pitch-videos/{user.id}/{filename}"
@@ -94,7 +116,29 @@ async def save_my_pitch_video(
             status_code=status.HTTP_404_NOT_FOUND,
             detail="Startup profile not found.",
         )
+
+    _delete_local_media_file(previous_pitch_video_url)
     return _serialize_startup_profile(db, updated_profile)
+
+
+def _has_valid_video_signature(chunk: bytes, *, content_type: str | None) -> bool:
+    if content_type in {"video/mp4", "video/quicktime"}:
+        return len(chunk) >= 12 and chunk[4:8] == b"ftyp"
+    if content_type == "video/webm":
+        return chunk.startswith(b"\x1a\x45\xdf\xa3")
+    return False
+
+
+def _delete_local_media_file(media_url: str | None) -> None:
+    if not media_url or not media_url.startswith(f"{settings.public_media_path}/"):
+        return
+
+    media_root = Path(settings.media_root).resolve()
+    relative_path = media_url.removeprefix(f"{settings.public_media_path}/")
+    media_path = (media_root / relative_path).resolve()
+
+    if media_root in media_path.parents and media_path.is_file():
+        media_path.unlink(missing_ok=True)
 
 
 def _serialize_startup_profile(

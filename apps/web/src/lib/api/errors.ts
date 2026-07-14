@@ -9,8 +9,14 @@ type PydanticValidationError = {
 };
 
 type ApiErrorBody = {
-  detail?: string | PydanticValidationError[];
+  detail?: string | PydanticValidationError[] | unknown;
+  message?: unknown;
+  error?: unknown;
 };
+
+function isApiErrorBody(value: unknown): value is ApiErrorBody {
+  return value !== null && typeof value === "object";
+}
 
 export function getApiErrorMessage(error: unknown, fallback: string) {
   if (error instanceof AxiosError) {
@@ -27,9 +33,9 @@ export function getApiErrorMessage(error: unknown, fallback: string) {
     }
 
     // 2. Handle structured JSON error objects
-    if (data && typeof data === "object") {
-      const detail = (data as ApiErrorBody).detail;
-      const message = (data as any).message || (data as any).error;
+    if (isApiErrorBody(data)) {
+      const detail = data.detail;
+      const message = data.message || data.error;
 
       if (detail) {
         // Pydantic validation errors come back as an array of objects

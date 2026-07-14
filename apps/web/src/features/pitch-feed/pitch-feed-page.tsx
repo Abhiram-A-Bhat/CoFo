@@ -19,16 +19,17 @@ import { calculateMatchScore } from "@/lib/matching-algorithm";
 
 const PAGE_SIZE = 20;
 
+type ScoredStartupDiscoveryItem = StartupDiscoveryItem & {
+  matchScore?: number;
+  matchReasons?: string[];
+};
+
 export function PitchFeedPage() {
   const [query, setQuery] = useState("");
   const [industry, setIndustry] = useState("");
-  const [items, setItems] = useState<StartupDiscoveryItem[]>([]);
-  const [total, setTotal] = useState(0);
+  const [items, setItems] = useState<ScoredStartupDiscoveryItem[]>([]);
   const [error, setError] = useState("");
   const [isLoading, setIsLoading] = useState(true);
-
-  const [currentUser, setCurrentUser] = useState<AuthUser | null>(null);
-  const [investorProfile, setInvestorProfile] = useState<InvestorProfile | null>(null);
 
   async function loadFeed() {
     setIsLoading(true);
@@ -39,16 +40,14 @@ export function PitchFeedPage() {
       let userObj: AuthUser | null = null;
       try {
         userObj = await getMe();
-        setCurrentUser(userObj);
-      } catch (e) {}
+      } catch (_e) {}
 
       // 2. Fetch Investor details if investor
       let invProfile: InvestorProfile | null = null;
       if (userObj && (userObj.role === "investor" || localStorage.getItem("fundflow_active_workspace") === "investor")) {
         try {
           invProfile = await getMyInvestorProfile();
-          setInvestorProfile(invProfile);
-        } catch (e) {}
+        } catch (_e) {}
       }
 
       // 3. Fetch Feed items
@@ -60,7 +59,7 @@ export function PitchFeedPage() {
       });
 
       // 4. Score and Sort items using the algorithm if user is logged in
-      let scoredItems = [...response.items];
+      let scoredItems: ScoredStartupDiscoveryItem[] = [...response.items];
       if (userObj) {
         scoredItems = scoredItems.map(item => {
           const match = calculateMatchScore(item, userObj, invProfile);
@@ -73,11 +72,10 @@ export function PitchFeedPage() {
         });
         
         // Sort items by score descending
-        scoredItems.sort((a, b) => ((b as any).matchScore || 0) - ((a as any).matchScore || 0));
+        scoredItems.sort((a, b) => (b.matchScore || 0) - (a.matchScore || 0));
       }
 
       setItems(scoredItems);
-      setTotal(response.total);
     } catch (caughtError) {
       setError(getApiErrorMessage(caughtError, "Unable to load pitch feed."));
     } finally {
@@ -199,7 +197,7 @@ function PitchCardSkeleton() {
   );
 }
 
-function PitchCard({ startup }: { startup: StartupDiscoveryItem }) {
+function PitchCard({ startup }: { startup: ScoredStartupDiscoveryItem }) {
   const [liked, setLiked] = useState(false);
   const [saved, setSaved] = useState(false);
   // Financial metrics open by default
@@ -248,17 +246,17 @@ function PitchCard({ startup }: { startup: StartupDiscoveryItem }) {
               <VerificationBadges badges={startup.verification_badges} />
             </div>
             <span className="text-[11px] text-white/35">
-              {startup.industry} • {startup.headquarters || "Global"}
+              {startup.industry} / {startup.headquarters || "Global"}
             </span>
           </div>
         </div>
         <div className="flex items-center gap-2">
-          {((startup as any).matchScore !== undefined) && (
+          {startup.matchScore !== undefined && (
             <div 
-              title={((startup as any).matchReasons || []).join("\n")}
+              title={(startup.matchReasons || []).join("\n")}
               className="bg-emerald-500 text-black text-[10px] font-bold px-2 py-0.5 rounded-md shadow-[0_0_10px_rgba(16,185,129,0.3)] cursor-help"
             >
-              {((startup as any).matchScore)}% Match
+              {startup.matchScore}% Match
             </div>
           )}
           {startup.stage && (
@@ -376,7 +374,7 @@ function PitchCard({ startup }: { startup: StartupDiscoveryItem }) {
           {startup.description}
         </p>
 
-        {/* Financial Metrics — expanded by default */}
+        {/* Financial metrics expanded by default */}
         <div className="border-t border-white/[0.06] pt-4">
           <button
             onClick={() => setShowMetrics(!showMetrics)}

@@ -2,11 +2,11 @@ from pathlib import Path
 
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.staticfiles import StaticFiles
 from starlette.middleware.base import BaseHTTPMiddleware
 from starlette.requests import Request
 from starlette.responses import Response
 
+from app.api.media import router as media_router
 from app.api.v1.router import api_router
 from app.api.v1.messaging_ws import router as messaging_ws_router
 from app.core.config import settings
@@ -81,11 +81,7 @@ app.include_router(api_router, prefix=settings.api_v1_prefix)
 app.include_router(messaging_ws_router, prefix=settings.api_v1_prefix)
 
 Path(settings.media_root).mkdir(parents=True, exist_ok=True)
-app.mount(
-    settings.public_media_path,
-    StaticFiles(directory=settings.media_root),
-    name="media",
-)
+app.include_router(media_router)
 
 
 @app.get("/health", tags=["system"])
