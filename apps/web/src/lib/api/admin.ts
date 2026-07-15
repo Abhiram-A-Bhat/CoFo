@@ -86,3 +86,30 @@ export async function updateAdminSettings(payload: AdminMatchSettings) {
   const response = await apiClient.put<AdminMatchSettings>("/admin/settings", payload);
   return response.data;
 }
+
+export async function deleteAdminUser(userId: string) {
+  const response = await apiClient.delete(`/admin/users/${userId}`);
+  return response.data;
+}
+
+export type AdminPitch = {
+  id: string;
+  user_id: string;
+  startup_name: string;
+  industry: string;
+  stage: string;
+  funding_required: string;
+  founder_name: string | null;
+  founder_email: string;
+  created_at: string;
+};
+
+export async function listAdminPitches() {
+  const response = await apiClient.get<AdminPitch[]>("/admin/pitches");
+  return response.data;
+}
+
+export async function deleteAdminPitch(pitchId: string) {
+  const response = await apiClient.delete(`/admin/pitches/${pitchId}`);
+  return response.data;
+}

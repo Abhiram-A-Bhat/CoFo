@@ -19,6 +19,7 @@ from app.schemas.admin import (
 from app.services.admin import (
     list_admin_users,
     update_admin_user,
+    delete_admin_user,
     list_admin_verifications,
     approve_admin_verification,
     reject_admin_verification,
@@ -27,6 +28,8 @@ from app.services.admin import (
     delete_admin_announcement,
     get_admin_settings,
     update_admin_settings,
+    list_admin_pitches,
+    delete_admin_pitch,
 )
 from app.schemas.user import UserPublic
 
@@ -49,6 +52,16 @@ def update_user(
     db: Annotated[Session, Depends(get_db)],
 ) -> UserPublic:
     return update_admin_user(db, user_id=user_id, payload=payload)
+
+
+@router.delete("/users/{user_id}")
+def delete_user(
+    user_id: UUID,
+    current_user: Annotated[User, Depends(get_current_admin)],
+    db: Annotated[Session, Depends(get_db)],
+):
+    delete_admin_user(db, user_id=user_id)
+    return {"status": "success", "message": "User deleted"}
 
 
 @router.get("/verifications", response_model=list[AdminVerificationPublic])
@@ -122,3 +135,21 @@ def update_settings(
     db: Annotated[Session, Depends(get_db)],
 ) -> AdminMatchSettingsPublic:
     return update_admin_settings(db, payload=payload)
+
+
+@router.get("/pitches")
+def list_pitches(
+    current_user: Annotated[User, Depends(get_current_admin)],
+    db: Annotated[Session, Depends(get_db)],
+):
+    return list_admin_pitches(db)
+
+
+@router.delete("/pitches/{pitch_id}")
+def delete_pitch(
+    pitch_id: UUID,
+    current_user: Annotated[User, Depends(get_current_admin)],
+    db: Annotated[Session, Depends(get_db)],
+):
+    delete_admin_pitch(db, pitch_id=pitch_id)
+    return {"status": "success", "message": "Pitch deleted"}

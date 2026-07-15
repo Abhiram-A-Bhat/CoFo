@@ -117,7 +117,7 @@ export function InvestorDiscoveryPage() {
       {/* Header */}
       <div className="flex flex-col justify-between gap-4 md:flex-row md:items-end border-b border-white/10 pb-6">
         <div>
-          <span className="bg-gradient-to-r from-yellow-400 via-pink-500 to-purple-500 bg-clip-text text-xs font-bold uppercase tracking-widest text-transparent">
+          <span className="text-xs font-bold uppercase tracking-widest text-emerald-400">
             Capital Network
           </span>
           <h1 className="text-3xl font-bold tracking-tight text-white mt-1">Explore Investors</h1>

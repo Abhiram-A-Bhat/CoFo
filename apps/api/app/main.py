@@ -43,6 +43,21 @@ async def universal_exception_handler(request: Request, exc: Exception):
 def on_startup():
     # Ensure all tables are created (including in production PostgreSQL)
     Base.metadata.create_all(bind=engine)
+    
+    # Auto-promote abhiramabhat2005@gmail.com to admin if exists
+    try:
+        from app.db.session import SessionLocal
+        from app.models.user import User
+        db = SessionLocal()
+        user = db.query(User).filter(User.email == "abhiramabhat2005@gmail.com").first()
+        if user and user.role != "admin":
+            user.role = "admin"
+            db.commit()
+            print("Auto-promoted abhiramabhat2005@gmail.com to admin.")
+        db.close()
+    except Exception as e:
+        print(f"Error auto-promoting admin on startup: {e}")
+
 
 
 class SecurityHeadersMiddleware(BaseHTTPMiddleware):

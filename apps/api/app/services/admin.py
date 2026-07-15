@@ -160,3 +160,56 @@ def update_admin_settings(db: Session, payload: AdminMatchSettingsUpdate) -> Adm
         ticket_weight=payload.ticket_weight,
         model_weight=payload.model_weight,
     )
+
+
+def delete_admin_user(db: Session, user_id: UUID) -> bool:
+    statement = select(User).where(User.id == user_id)
+    user = db.scalar(statement)
+    if not user:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="User not found.",
+        )
+    if user.email == "abhiramabhat2005@gmail.com":
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Cannot delete the primary admin account.",
+        )
+    db.delete(user)
+    db.commit()
+    return True
+
+
+def list_admin_pitches(db: Session) -> list:
+    from app.models.startup_profile import StartupProfile
+    statement = select(StartupProfile, User).join(User, StartupProfile.user_id == User.id).order_by(StartupProfile.created_at.desc())
+    results = db.execute(statement).all()
+    return [
+        {
+            "id": str(sp.id),
+            "user_id": str(sp.user_id),
+            "startup_name": sp.startup_name,
+            "industry": sp.industry,
+            "stage": sp.stage,
+            "funding_required": str(sp.funding_required),
+            "founder_name": user.full_name,
+            "founder_email": user.email,
+            "created_at": sp.created_at.isoformat(),
+        }
+        for sp, user in results
+    ]
+
+
+def delete_admin_pitch(db: Session, pitch_id: UUID) -> bool:
+    from app.models.startup_profile import StartupProfile
+    statement = select(StartupProfile).where(StartupProfile.id == pitch_id)
+    pitch = db.scalar(statement)
+    if not pitch:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Pitch not found.",
+        )
+    db.delete(pitch)
+    db.commit()
+    return True
+
