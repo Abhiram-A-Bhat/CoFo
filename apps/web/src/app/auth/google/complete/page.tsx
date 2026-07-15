@@ -1,15 +1,13 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Loader2 } from "lucide-react";
 
 /**
- * Landing page after Google OAuth callback.
- * The backend redirects here with ?token=... in the URL.
- * We store it in localStorage (same as regular login) then redirect.
+ * Inner component that safely uses useSearchParams inside a Suspense boundary.
  */
-export default function GoogleCompletePage() {
+function GoogleCompleteContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
 
@@ -39,11 +37,29 @@ export default function GoogleCompletePage() {
   }, [router, searchParams]);
 
   return (
+    <div className="flex flex-col items-center gap-3 text-center">
+      <Loader2 className="h-8 w-8 animate-spin text-primary" />
+      <p className="text-sm text-muted-foreground">Completing sign-in…</p>
+    </div>
+  );
+}
+
+/**
+ * Main page wrapped in a Suspense boundary to satisfy Next.js static generation rules.
+ */
+export default function GoogleCompletePage() {
+  return (
     <div className="flex min-h-screen items-center justify-center bg-background">
-      <div className="flex flex-col items-center gap-3 text-center">
-        <Loader2 className="h-8 w-8 animate-spin text-primary" />
-        <p className="text-sm text-muted-foreground">Completing sign-in…</p>
-      </div>
+      <Suspense
+        fallback={
+          <div className="flex flex-col items-center gap-3 text-center">
+            <Loader2 className="h-8 w-8 animate-spin text-primary" />
+            <p className="text-sm text-muted-foreground">Loading authentication…</p>
+          </div>
+        }
+      >
+        <GoogleCompleteContent />
+      </Suspense>
     </div>
   );
 }
