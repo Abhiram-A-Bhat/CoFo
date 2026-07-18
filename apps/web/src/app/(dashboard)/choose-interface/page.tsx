@@ -7,10 +7,12 @@ import { useRouter } from "next/navigation";
 
 import { Card, CardContent } from "@/components/ui/card";
 import { getMe, updateProfile } from "@/lib/api/auth";
+import { Button } from "@/components/ui/button";
 
 export default function ChooseInterfacePage() {
   const router = useRouter();
   const [loading, setLoading] = useState(true);
+  const [selectedWorkspace, setSelectedWorkspace] = useState<"founder" | "investor" | null>(null);
 
   useEffect(() => {
     async function checkRole() {
@@ -36,13 +38,14 @@ export default function ChooseInterfacePage() {
     checkRole();
   }, [router]);
 
-  const handleSelect = async (ws: "founder" | "investor") => {
+  const handleConfirm = async () => {
+    if (!selectedWorkspace) return;
     setLoading(true);
     try {
       // Permanently assign the selected role in the database for the user
-      await updateProfile({ role: ws });
-      localStorage.setItem("fundflow_active_workspace", ws);
-      if (ws === "founder") {
+      await updateProfile({ role: selectedWorkspace });
+      localStorage.setItem("fundflow_active_workspace", selectedWorkspace);
+      if (selectedWorkspace === "founder") {
         router.push("/pitch-feed");
       } else {
         router.push("/startup-discovery");
@@ -89,51 +92,77 @@ export default function ChooseInterfacePage() {
         <div className="grid gap-5 lg:grid-cols-2">
           <InterfaceCard
             body="Manage your startup profile, discover investors, review matches, and message capital partners."
-            href="/founder"
             icon={Building2}
             label="I am raising capital"
             title="Founder"
-            onClick={() => handleSelect("founder")}
+            isSelected={selectedWorkspace === "founder"}
+            onClick={() => setSelectedWorkspace("founder")}
           />
           <InterfaceCard
             body="Manage your investor profile, discover startups, review matches, and message founders."
-            href="/investor"
             icon={TrendingUp}
             label="I am deploying capital"
             title="Investor"
-            onClick={() => handleSelect("investor")}
+            isSelected={selectedWorkspace === "investor"}
+            onClick={() => setSelectedWorkspace("investor")}
           />
         </div>
+
+        {selectedWorkspace && (
+          <div className="flex justify-center mt-4">
+            <Button
+              onClick={handleConfirm}
+              size="lg"
+              className="px-10 py-6 text-base font-semibold transition-all hover:scale-[1.02] active:scale-[0.98]"
+            >
+              Confirm and Continue
+              <ArrowRight className="ml-2 h-5 w-5" />
+            </Button>
+          </div>
+        )}
       </section>
     </main>
   );
 }
 
+
 function InterfaceCard({
   body,
-  href,
   icon: Icon,
   label,
   title,
+  isSelected,
   onClick
 }: {
   body: string;
-  href: string;
   icon: typeof Building2;
   label: string;
   title: string;
+  isSelected: boolean;
   onClick: () => void;
 }) {
   return (
-    <Link href={href} onClick={onClick}>
-      <Card className="group min-h-[320px] border-white/15 transition-all duration-200 hover:-translate-y-1 hover:border-primary/30 hover:bg-card">
+    <button type="button" onClick={onClick} className="w-full text-left outline-none">
+      <Card
+        className={`group min-h-[320px] transition-all duration-200 hover:-translate-y-1 hover:bg-card ${
+          isSelected 
+            ? "border-emerald-500 bg-emerald-500/[0.02] shadow-[0_0_24px_rgba(52,211,153,0.06)]" 
+            : "border-white/15 hover:border-white/25"
+        }`}
+      >
         <CardContent className="flex h-full flex-col justify-between gap-8 p-8 sm:p-10">
           <div className="space-y-6">
-            <div className="flex h-14 w-14 items-center justify-center rounded-2xl border border-primary/30 bg-primary/10 text-primary">
+            <div className={`flex h-14 w-14 items-center justify-center rounded-2xl border transition-colors ${
+              isSelected 
+                ? "border-emerald-500/50 bg-emerald-500/10 text-emerald-400" 
+                : "border-primary/30 bg-primary/10 text-primary"
+            }`}>
               <Icon className="h-7 w-7" />
             </div>
             <div className="space-y-3">
-              <p className="text-xs font-medium uppercase tracking-[0.16em] text-primary">
+              <p className={`text-xs font-medium uppercase tracking-[0.16em] transition-colors ${
+                isSelected ? "text-emerald-400" : "text-primary"
+              }`}>
                 {label}
               </p>
               <h2 className="text-3xl font-semibold tracking-normal sm:text-4xl">{title}</h2>
@@ -142,12 +171,17 @@ function InterfaceCard({
               </p>
             </div>
           </div>
-          <div className="flex items-center text-sm font-medium text-primary">
-            Open {title} workspace
-            <ArrowRight className="ml-2 h-4 w-4 transition-transform group-hover:translate-x-1" />
+          <div className={`flex items-center text-sm font-medium transition-colors ${
+            isSelected ? "text-emerald-400" : "text-primary"
+          }`}>
+            {isSelected ? `Selected ${title}` : `Select ${title}`}
+            <ArrowRight className={`ml-2 h-4 w-4 transition-transform ${
+              isSelected ? "translate-x-1" : "group-hover:translate-x-1"
+            }`} />
           </div>
         </CardContent>
       </Card>
-    </Link>
+    </button>
   );
 }
+
