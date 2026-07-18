@@ -113,6 +113,10 @@ export function AdminPage() {
   const [editRole, setEditRole] = useState("");
   const [editActive, setEditActive] = useState(true);
 
+  // Rejection reason inline UI
+  const [rejectingId, setRejectingId] = useState<string | null>(null);
+  const [rejectionReason, setRejectionReason] = useState("");
+
   // Confirm dialog
   const [confirm, setConfirm] = useState<{ message: string; onConfirm: () => void } | null>(null);
 
@@ -208,12 +212,17 @@ export function AdminPage() {
     }
   };
 
-  const handleRejectVerification = async (verificationId: string) => {
+  const handleRejectVerification = async (verificationId: string, reason: string) => {
     try {
       setError("");
       setSuccess("");
-      await rejectAdminVerification(verificationId, "Incomplete profile details provided.");
+      await rejectAdminVerification(
+        verificationId,
+        reason.trim() || "Verification request rejected by admin."
+      );
       setVerifications(verifications.filter((v) => v.id !== verificationId));
+      setRejectingId(null);
+      setRejectionReason("");
       setSuccess("Verification rejected.");
     } catch (caughtError) {
       setError(getApiErrorMessage(caughtError, "Failed to reject verification."));
@@ -535,7 +544,10 @@ export function AdminPage() {
                                 <Button
                                   variant="outline"
                                   size="sm"
-                                  onClick={() => handleRejectVerification(req.id)}
+                                  onClick={() => {
+                                    setRejectingId(rejectingId === req.id ? null : req.id);
+                                    setRejectionReason("");
+                                  }}
                                   className="border-red-500/50 text-red-400 hover:bg-red-500/10 hover:text-red-300"
                                 >
                                   <X className="mr-1 h-3.5 w-3.5" /> Reject
@@ -544,6 +556,39 @@ export function AdminPage() {
                             )}
                           </div>
                         </div>
+
+                        {/* Inline rejection reason panel */}
+                        {rejectingId === req.id && (
+                          <div className="flex flex-col gap-2 rounded-lg border border-red-500/20 bg-red-500/5 p-3">
+                            <p className="text-xs font-medium text-red-400">
+                              Reason for rejection <span className="text-white/30">(optional)</span>
+                            </p>
+                            <textarea
+                              value={rejectionReason}
+                              onChange={(e) => setRejectionReason(e.target.value)}
+                              placeholder="e.g. Incomplete profile, missing LinkedIn URL…"
+                              rows={2}
+                              className="w-full resize-none rounded-lg border border-white/10 bg-black/20 px-3 py-2 text-sm text-white placeholder:text-white/20 outline-none focus:border-red-500/40 focus:ring-1 focus:ring-red-500/20 transition-all"
+                            />
+                            <div className="flex gap-2">
+                              <Button
+                                size="sm"
+                                onClick={() => handleRejectVerification(req.id, rejectionReason)}
+                                className="bg-red-600 text-white hover:bg-red-700"
+                              >
+                                Confirm Rejection
+                              </Button>
+                              <Button
+                                size="sm"
+                                variant="ghost"
+                                onClick={() => { setRejectingId(null); setRejectionReason(""); }}
+                                className="text-white/50 hover:text-white"
+                              >
+                                Cancel
+                              </Button>
+                            </div>
+                          </div>
+                        )}
 
                         <div className="grid gap-3 rounded-lg border border-white/5 bg-black/10 p-3 text-sm sm:grid-cols-3">
                           <div>
