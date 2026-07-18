@@ -76,6 +76,10 @@ export function LoginForm() {
 
   function handleGoogleSignIn() {
     setIsGoogleLoading(true);
+    // Safety timeout: if page doesn't unload/redirect in 8 seconds, clear spinner
+    setTimeout(() => {
+      setIsGoogleLoading(false);
+    }, 8000);
     window.location.href = getGoogleAuthUrl();
   }
 
@@ -123,7 +127,8 @@ export function LoginForm() {
             value={email}
             onChange={(e) => setEmail(e.target.value)}
             placeholder="you@company.com"
-            className="w-full rounded-xl border border-white/[0.08] bg-white/[0.04] px-4 py-3 text-[14px] text-white placeholder:text-white/20 outline-none focus:border-emerald-500/50 focus:ring-2 focus:ring-emerald-500/10 transition-all"
+            disabled={isLoading}
+            className="w-full rounded-xl border border-white/[0.08] bg-white/[0.04] px-4 py-3 text-[14px] text-white placeholder:text-white/20 outline-none focus:border-emerald-500/50 focus:ring-2 focus:ring-emerald-500/10 transition-all disabled:opacity-50"
           />
         </div>
 
@@ -140,19 +145,21 @@ export function LoginForm() {
             value={password}
             onChange={(e) => setPassword(e.target.value)}
             placeholder="••••••••"
-            className="w-full rounded-xl border border-white/[0.08] bg-white/[0.04] px-4 py-3 text-[14px] text-white placeholder:text-white/20 outline-none focus:border-emerald-500/50 focus:ring-2 focus:ring-emerald-500/10 transition-all"
+            disabled={isLoading}
+            className="w-full rounded-xl border border-white/[0.08] bg-white/[0.04] px-4 py-3 text-[14px] text-white placeholder:text-white/20 outline-none focus:border-emerald-500/50 focus:ring-2 focus:ring-emerald-500/10 transition-all disabled:opacity-50"
           />
         </div>
 
         <button
           type="submit"
-          disabled={isLoading || isGoogleLoading}
+          disabled={isLoading}
           className="mt-2 w-full rounded-xl bg-emerald-500 py-3 text-[14px] font-semibold text-black hover:bg-emerald-400 active:scale-[0.99] transition-all disabled:opacity-60 disabled:cursor-not-allowed flex items-center justify-center gap-2"
         >
           {isLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : null}
           {isLoading ? "Signing in..." : "Sign in"}
         </button>
       </form>
+
     </div>
   );
 }

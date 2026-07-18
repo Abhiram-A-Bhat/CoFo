@@ -79,6 +79,9 @@ export function SignupForm() {
 
   function handleGoogleSignIn() {
     setIsGoogleLoading(true);
+    setTimeout(() => {
+      setIsGoogleLoading(false);
+    }, 8000);
     window.location.href = getGoogleAuthUrl();
   }
 
