@@ -1,27 +1,65 @@
 "use client";
 
-import { useEffect } from "react";
-import { ArrowRight, Building2, ShieldCheck, TrendingUp } from "lucide-react";
+import { useEffect, useState } from "react";
+import { ArrowRight, Building2, ShieldCheck, TrendingUp, Loader2 } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 
 import { Card, CardContent } from "@/components/ui/card";
+import { getMe, updateProfile } from "@/lib/api/auth";
 
 export default function ChooseInterfacePage() {
   const router = useRouter();
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const saved = localStorage.getItem("fundflow_active_workspace");
-    if (saved === "founder") {
-      router.replace("/pitch-feed");
-    } else if (saved === "investor") {
-      router.replace("/startup-discovery");
+    async function checkRole() {
+      try {
+        const user = await getMe();
+        if (user.role !== "unassigned") {
+          const saved = localStorage.getItem("fundflow_active_workspace");
+          if (saved === "founder") {
+            router.replace("/pitch-feed");
+            return;
+          } else if (saved === "investor") {
+            router.replace("/startup-discovery");
+            return;
+          }
+        }
+      } catch (err) {
+        router.replace("/login");
+        return;
+      } finally {
+        setLoading(false);
+      }
     }
+    checkRole();
   }, [router]);
 
-  const handleSelect = (ws: "founder" | "investor") => {
-    localStorage.setItem("fundflow_active_workspace", ws);
+  const handleSelect = async (ws: "founder" | "investor") => {
+    setLoading(true);
+    try {
+      // Permanently assign the selected role in the database for the user
+      await updateProfile({ role: ws });
+      localStorage.setItem("fundflow_active_workspace", ws);
+      if (ws === "founder") {
+        router.push("/pitch-feed");
+      } else {
+        router.push("/startup-discovery");
+      }
+    } catch (err) {
+      setLoading(false);
+    }
   };
+
+  if (loading) {
+    return (
+      <div className="flex min-h-screen items-center justify-center bg-background">
+        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+      </div>
+    );
+  }
+
 
   return (
     <main className="relative min-h-screen overflow-hidden bg-background px-4 py-6 sm:px-6 lg:px-8">

@@ -4,7 +4,7 @@ export type AuthUser = {
   id: string;
   email: string;
   full_name: string | null;
-  role: "founder" | "investor" | "admin";
+  role: "founder" | "investor" | "admin" | "unassigned";
   investment_interests: string[];
   active_workspace: "founder" | "investor" | null;
   is_active: boolean;
@@ -59,6 +59,7 @@ export async function updateMyPreferences(payload: { active_workspace: "founder"
 export type UpdateProfilePayload = {
   full_name?: string;
   password?: string;
+  role?: "founder" | "investor" | "unassigned";
 };
 
 export async function updateProfile(payload: UpdateProfilePayload) {

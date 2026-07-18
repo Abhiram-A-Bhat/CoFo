@@ -117,7 +117,7 @@ def google_oauth_login(
             email=email,
             hashed_password=None,
             full_name=full_name,
-            role="founder",  # default; user will pick on /choose-interface
+            role="unassigned",  # new Google users start unassigned
             investment_interests=[],
         )
         user.google_id = google_id

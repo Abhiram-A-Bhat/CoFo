@@ -35,6 +35,8 @@ def update_current_user(
         current_user.full_name = payload.full_name
     if payload.password is not None:
         current_user.hashed_password = hash_password(payload.password)
+    if payload.role is not None:
+        current_user.role = payload.role
     db.commit()
     db.refresh(current_user)
     return current_user

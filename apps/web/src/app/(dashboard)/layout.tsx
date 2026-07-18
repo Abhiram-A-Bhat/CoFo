@@ -35,6 +35,13 @@ export default function DashboardLayout({ children }: { children: ReactNode }) {
         const currentUser = await getMe();
         setUser(currentUser);
         setAuthenticated(true);
+
+        if (currentUser.role === "unassigned") {
+          if (pathname !== "/choose-interface") {
+            router.replace("/choose-interface");
+            return;
+          }
+        }
         
         const savedWorkspace = localStorage.getItem("fundflow_active_workspace");
         // Server value takes priority; fall back to localStorage then role default
@@ -57,7 +64,7 @@ export default function DashboardLayout({ children }: { children: ReactNode }) {
       }
     }
     initAuth();
-  }, [router]);
+  }, [router, pathname]);
 
   const handleWorkspaceToggle = () => {
     const nextWS = workspace === "founder" ? "investor" : "founder";

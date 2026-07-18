@@ -53,6 +53,7 @@ class LogoutResponse(BaseModel):
 class UpdateProfileRequest(BaseModel):
     full_name: str | None = Field(default=None, max_length=255)
     password: str | None = Field(default=None, min_length=8, max_length=128)
+    role: Literal["founder", "investor"] | None = None
 
     @field_validator("password")
     @classmethod
