@@ -500,7 +500,7 @@ function FormSection({
                       onClick={() => onChange(field.id, val)}
                       className="rounded bg-white/[0.04] border border-white/10 px-2 py-0.5 text-[10px] text-white/50 hover:text-white hover:border-white/20 transition-all"
                     >
-                      {new Intl.NumberFormat("en-US", { style: "currency", currency: "USD", maximumFractionDigits: 0 }).format(Number(val))}
+                      {new Intl.NumberFormat("en-IN", { style: "currency", currency: "INR", maximumFractionDigits: 0 }).format(Number(val))}
                     </button>
                   ))}
                 </div>
