@@ -20,6 +20,10 @@ import {
   Calendar,
   Search,
   RefreshCw,
+  BarChart3,
+  TrendingUp,
+  Activity,
+  Award,
 } from "lucide-react";
 
 import { Alert } from "@/components/ui/alert";
@@ -50,7 +54,8 @@ import {
 } from "@/lib/api/admin";
 import type { AuthUser } from "@/lib/api/auth";
 
-type ActiveTab = "users" | "verifications" | "posts" | "announcements" | "settings";
+type ActiveTab = "dashboard" | "users" | "verifications" | "posts" | "announcements" | "settings";
+
 
 /* ── confirmation dialog ─────────────────────────────────────────── */
 function ConfirmDialog({
@@ -92,7 +97,7 @@ function ConfirmDialog({
 
 /* ── main component ──────────────────────────────────────────────── */
 export function AdminPage() {
-  const [activeTab, setActiveTab] = useState<ActiveTab>("users");
+  const [activeTab, setActiveTab] = useState<ActiveTab>("dashboard");
 
   // Data states
   const [users, setUsers] = useState<AuthUser[]>([]);
@@ -132,7 +137,16 @@ export function AdminPage() {
       setError("");
       setSuccess("");
       try {
-        if (activeTab === "users") {
+        if (activeTab === "dashboard") {
+          const [uRes, vRes, pRes] = await Promise.all([
+            listAdminUsers(),
+            listAdminVerifications(),
+            listAdminPitches(),
+          ]);
+          setUsers(uRes.items);
+          setVerifications(vRes);
+          setPitches(pRes);
+        } else if (activeTab === "users") {
           const response = await listAdminUsers();
           setUsers(response.items);
         } else if (activeTab === "verifications") {
@@ -305,6 +319,7 @@ export function AdminPage() {
 
   /* ── tab config ─────────────────────────────────────────────── */
   const tabs: { id: ActiveTab; label: string; icon: React.ReactNode; count?: number }[] = [
+    { id: "dashboard", label: "Dashboard", icon: <BarChart3 className="h-4 w-4" /> },
     { id: "users", label: "Users", icon: <Users className="h-4 w-4" />, count: users.length },
     { id: "verifications", label: "Verifications", icon: <UserCheck className="h-4 w-4" />, count: verifications.filter((v) => !v.verification_badges.includes("Verified Profile")).length },
     { id: "posts", label: "Posts", icon: <FileText className="h-4 w-4" />, count: pitches.length },
@@ -388,6 +403,225 @@ export function AdminPage() {
           </div>
         ) : (
           <div className="space-y-6">
+
+            {/* ── DASHBOARD TAB ────────────────────────────────────── */}
+            {activeTab === "dashboard" && (
+              <div className="space-y-6">
+                {/* Metric Summary Cards */}
+                <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+                  <Card className="border-white/10 bg-white/[0.01]">
+                    <CardHeader className="flex flex-row items-center justify-between pb-2">
+                      <CardTitle className="text-sm font-medium text-muted-foreground">Total Users</CardTitle>
+                      <Users className="h-4 w-4 text-primary" />
+                    </CardHeader>
+                    <CardContent>
+                      <div className="text-2xl font-bold">{users.length}</div>
+                      <p className="text-xs text-muted-foreground">
+                        {users.filter(u => u.is_active).length} active accounts
+                      </p>
+                    </CardContent>
+                  </Card>
+
+                  <Card className="border-white/10 bg-white/[0.01]">
+                    <CardHeader className="flex flex-row items-center justify-between pb-2">
+                      <CardTitle className="text-sm font-medium text-muted-foreground">Startups (Founders)</CardTitle>
+                      <Building2 className="h-4 w-4 text-emerald-400" />
+                    </CardHeader>
+                    <CardContent>
+                      <div className="text-2xl font-bold">
+                        {users.filter(u => u.role === "founder").length}
+                      </div>
+                      <p className="text-xs text-muted-foreground">
+                        {pitches.length} startup pitch profiles
+                      </p>
+                    </CardContent>
+                  </Card>
+
+                  <Card className="border-white/10 bg-white/[0.01]">
+                    <CardHeader className="flex flex-row items-center justify-between pb-2">
+                      <CardTitle className="text-sm font-medium text-muted-foreground">Investors</CardTitle>
+                      <TrendingUp className="h-4 w-4 text-blue-400" />
+                    </CardHeader>
+                    <CardContent>
+                      <div className="text-2xl font-bold">
+                        {users.filter(u => u.role === "investor").length}
+                      </div>
+                      <p className="text-xs text-muted-foreground">
+                        {users.filter(u => u.role === "investor" && u.is_active).length} active allocators
+                      </p>
+                    </CardContent>
+                  </Card>
+
+                  <Card className="border-white/10 bg-white/[0.01]">
+                    <CardHeader className="flex flex-row items-center justify-between pb-2">
+                      <CardTitle className="text-sm font-medium text-muted-foreground">Pending Verifications</CardTitle>
+                      <Award className="h-4 w-4 text-amber-400" />
+                    </CardHeader>
+                    <CardContent>
+                      <div className="text-2xl font-bold">
+                        {verifications.filter(v => !v.verification_badges.includes("Verified Profile")).length}
+                      </div>
+                      <p className="text-xs text-muted-foreground">
+                        Requires admin review
+                      </p>
+                    </CardContent>
+                  </Card>
+                </div>
+
+                {/* Visualizations grid */}
+                <div className="grid gap-6 md:grid-cols-2">
+                  {/* User Distribution Chart */}
+                  <Card className="border-white/10 bg-white/[0.01]">
+                    <CardHeader>
+                      <CardTitle className="text-base font-semibold">User Role Distribution</CardTitle>
+                      <CardDescription>Breakdown of platform participants</CardDescription>
+                    </CardHeader>
+                    <CardContent className="space-y-4">
+                      {(() => {
+                        const total = users.length || 1;
+                        const founders = users.filter(u => u.role === "founder").length;
+                        const investors = users.filter(u => u.role === "investor").length;
+                        const admins = users.filter(u => u.role === "admin").length;
+                        const unassigned = users.filter(u => u.role === "unassigned").length;
+
+                        const fPct = Math.round((founders / total) * 100);
+                        const iPct = Math.round((investors / total) * 100);
+                        const aPct = Math.round((admins / total) * 100);
+                        const uPct = Math.round((unassigned / total) * 100);
+
+                        return (
+                          <div className="space-y-3">
+                            <div className="space-y-1">
+                              <div className="flex items-center justify-between text-xs">
+                                <span className="flex items-center gap-1.5"><Building2 className="h-3 w-3 text-emerald-400" /> Founders ({founders})</span>
+                                <span className="font-semibold text-white">{fPct}%</span>
+                              </div>
+                              <div className="h-2 w-full rounded-full bg-white/5 overflow-hidden">
+                                <div className="h-full bg-emerald-500 rounded-full" style={{ width: `${fPct}%` }} />
+                              </div>
+                            </div>
+
+                            <div className="space-y-1">
+                              <div className="flex items-center justify-between text-xs">
+                                <span className="flex items-center gap-1.5"><TrendingUp className="h-3 w-3 text-blue-400" /> Investors ({investors})</span>
+                                <span className="font-semibold text-white">{iPct}%</span>
+                              </div>
+                              <div className="h-2 w-full rounded-full bg-white/5 overflow-hidden">
+                                <div className="h-full bg-blue-500 rounded-full" style={{ width: `${iPct}%` }} />
+                              </div>
+                            </div>
+
+                            <div className="space-y-1">
+                              <div className="flex items-center justify-between text-xs">
+                                <span className="flex items-center gap-1.5"><ShieldCheck className="h-3 w-3 text-amber-400" /> Admins ({admins})</span>
+                                <span className="font-semibold text-white">{aPct}%</span>
+                              </div>
+                              <div className="h-2 w-full rounded-full bg-white/5 overflow-hidden">
+                                <div className="h-full bg-amber-500 rounded-full" style={{ width: `${aPct}%` }} />
+                              </div>
+                            </div>
+
+                            <div className="space-y-1">
+                              <div className="flex items-center justify-between text-xs">
+                                <span className="flex items-center gap-1.5"><Activity className="h-3 w-3 text-purple-400" /> Unassigned ({unassigned})</span>
+                                <span className="font-semibold text-white">{uPct}%</span>
+                              </div>
+                              <div className="h-2 w-full rounded-full bg-white/5 overflow-hidden">
+                                <div className="h-full bg-purple-500 rounded-full" style={{ width: `${uPct}%` }} />
+                              </div>
+                            </div>
+                          </div>
+                        );
+                      })()}
+                    </CardContent>
+                  </Card>
+
+                  {/* Industry Matchmaking Sector Breakdown */}
+                  <Card className="border-white/10 bg-white/[0.01]">
+                    <CardHeader>
+                      <CardTitle className="text-base font-semibold">Startup Sector Breakdown</CardTitle>
+                      <CardDescription>Industries represented in current pitches</CardDescription>
+                    </CardHeader>
+                    <CardContent className="space-y-3">
+                      {(() => {
+                        const sectors: Record<string, number> = {};
+                        pitches.forEach((p) => {
+                          const sec = p.industry || "Other";
+                          sectors[sec] = (sectors[sec] || 0) + 1;
+                        });
+
+                        const sorted = Object.entries(sectors).sort((a, b) => b[1] - a[1]);
+                        const maxCount = sorted[0]?.[1] || 1;
+
+                        if (sorted.length === 0) {
+                          return <div className="text-center text-xs text-muted-foreground py-8">No pitches registered yet.</div>;
+                        }
+
+                        return sorted.slice(0, 4).map(([sec, count]) => {
+                          const widthPct = Math.round((count / maxCount) * 100);
+                          return (
+                            <div key={sec} className="space-y-1">
+                              <div className="flex items-center justify-between text-xs">
+                                <span className="font-medium text-white">{sec}</span>
+                                <span className="text-muted-foreground">{count} {count === 1 ? 'pitch' : 'pitches'}</span>
+                              </div>
+                              <div className="h-2 w-full rounded-full bg-white/5 overflow-hidden">
+                                <div className="h-full bg-primary rounded-full" style={{ width: `${widthPct}%` }} />
+                              </div>
+                            </div>
+                          );
+                        });
+                      })()}
+                    </CardContent>
+                  </Card>
+                </div>
+
+                {/* Recents list */}
+                <Card className="border-white/10 bg-white/[0.01]">
+                  <CardHeader>
+                    <CardTitle className="text-base font-semibold">Recent Activity Log</CardTitle>
+                    <CardDescription>Latest pitch entries and verification queues</CardDescription>
+                  </CardHeader>
+                  <CardContent className="divide-y divide-white/5">
+                    {pitches.slice(0, 4).map((p) => (
+                      <div key={p.id} className="flex items-center justify-between py-3 text-xs">
+                        <div className="flex items-center gap-2">
+                          <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
+                            <Building2 className="h-3.5 w-3.5" />
+                          </div>
+                          <div>
+                            <span className="font-medium text-white">{p.startup_name}</span>
+                            <span className="text-muted-foreground block text-[10px]">Registered in {p.industry}</span>
+                          </div>
+                        </div>
+                        <Badge variant="outline" className="text-emerald-400/80 border-emerald-500/20">
+                          ₹{Number(p.funding_required).toLocaleString('en-IN')} Raise
+                        </Badge>
+                      </div>
+                    ))}
+                    {verifications.slice(0, 2).map((v) => (
+                      <div key={v.id} className="flex items-center justify-between py-3 text-xs">
+                        <div className="flex items-center gap-2">
+                          <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-amber-500/10 text-amber-400 border border-amber-500/20">
+                            <Award className="h-3.5 w-3.5" />
+                          </div>
+                          <div>
+                            <span className="font-medium text-white">{v.full_name || v.email}</span>
+                            <span className="text-muted-foreground block text-[10px]">Requested profile verification</span>
+                          </div>
+                        </div>
+                        <Badge variant="outline" className="text-amber-400/80 border-amber-500/20">
+                          Pending Review
+                        </Badge>
+                      </div>
+                    ))}
+                    {pitches.length === 0 && verifications.length === 0 && (
+                      <div className="text-center text-xs text-muted-foreground py-8">No activity logged.</div>
+                    )}
+                  </CardContent>
+                </Card>
+              </div>
+            )}
 
             {/* ── USERS TAB ───────────────────────────────────────── */}
             {activeTab === "users" && (
