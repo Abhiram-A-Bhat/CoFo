@@ -16,7 +16,8 @@ import {
   Kanban,
   Bookmark,
   BarChart2,
-  Bell
+  Bell,
+  Zap
 } from "lucide-react";
 
 import { getMe, logout, updateMyPreferences, type AuthUser } from "@/lib/api/auth";
@@ -25,6 +26,8 @@ import { listConversations } from "@/lib/api/messaging";
 
 import { CommandPalette } from "@/components/command-palette";
 import { NotificationBell } from "@/components/notification-bell";
+import { PricingModal } from "@/components/pricing-modal";
+import { KeyboardShortcutsModal } from "@/components/keyboard-shortcuts-modal";
 
 export default function DashboardLayout({ children }: { children: ReactNode }) {
   const router = useRouter();
@@ -34,6 +37,7 @@ export default function DashboardLayout({ children }: { children: ReactNode }) {
   const [authenticated, setAuthenticated] = useState(false);
   const [workspace, setWorkspace] = useState<"founder" | "investor">("founder");
   const [unreadCount, setUnreadCount] = useState(0);
+  const [isPricingOpen, setIsPricingOpen] = useState(false);
 
 
   useEffect(() => {
@@ -266,8 +270,23 @@ export default function DashboardLayout({ children }: { children: ReactNode }) {
               );
             })}
           </nav>
-          
 
+          {/* Upgrade Pro Banner */}
+          <div className="rounded-2xl border border-emerald-500/30 bg-gradient-to-b from-emerald-500/10 via-[#111] to-[#0d0d0d] p-3.5 space-y-2 text-xs">
+            <div className="flex items-center gap-1.5 font-bold text-emerald-400">
+              <Zap className="h-3.5 w-3.5" />
+              <span>BridgeCapita Pro</span>
+            </div>
+            <p className="text-[11px] text-white/50 leading-relaxed">
+              Unlock 10x pitch placement, direct investor intros, and diligence data room.
+            </p>
+            <button
+              onClick={() => setIsPricingOpen(true)}
+              className="w-full rounded-xl bg-emerald-500 hover:bg-emerald-400 text-black font-bold text-[11px] py-2 transition-all shadow-[0_0_12px_rgba(16,185,129,0.3)]"
+            >
+              Upgrade Plan
+            </button>
+          </div>
         </div>
 
         {/* Bottom Actions & User Profile */}
@@ -308,13 +327,12 @@ export default function DashboardLayout({ children }: { children: ReactNode }) {
           <span className="text-[14px] font-semibold text-white tracking-tight">BridgeCapita</span>
         </Link>
         <div className="flex items-center gap-2">
-          {/* Workspace toggle pill */}
           <button
-            onClick={handleWorkspaceToggle}
-            className="flex h-7 items-center gap-1.5 rounded-full border border-emerald-500/30 bg-emerald-500/10 px-3 text-[11px] font-semibold text-emerald-400 hover:bg-emerald-500/20 transition-all"
+            onClick={() => setIsPricingOpen(true)}
+            className="flex h-7 items-center gap-1 rounded-full border border-emerald-500/30 bg-emerald-500/10 px-2.5 text-[10px] font-bold text-emerald-400 hover:bg-emerald-500/20 transition-all shadow-[0_0_8px_rgba(16,185,129,0.2)]"
           >
-            <RefreshCw className="h-3 w-3" />
-            <span className="capitalize">{workspace}</span>
+            <Zap className="h-3 w-3" />
+            <span>PRO</span>
           </button>
           
           <NotificationBell />
@@ -368,6 +386,8 @@ export default function DashboardLayout({ children }: { children: ReactNode }) {
       </nav>
 
       <CommandPalette />
+      <PricingModal isOpen={isPricingOpen} onClose={() => setIsPricingOpen(false)} />
+      <KeyboardShortcutsModal />
     </div>
   );
 }

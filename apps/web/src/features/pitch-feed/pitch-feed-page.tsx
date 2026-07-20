@@ -14,7 +14,8 @@ import {
   Loader2,
   X,
   Sparkles,
-  Info
+  Info,
+  Share2
 } from "lucide-react";
 import { FormEvent, useEffect, useState, useRef } from "react";
 import Link from "next/link";
@@ -33,6 +34,7 @@ import { getMyInvestorProfile, type InvestorProfile } from "@/lib/api/investor-p
 import { calculateMatchScore } from "@/lib/matching-algorithm";
 import { getPitchComments, addPitchComment, toggleWatchlist, type PitchComment } from "@/lib/api/retention";
 import { useToast } from "@/lib/toast-context";
+import { ShareModal } from "@/components/share-modal";
 
 const PAGE_SIZE = 20;
 
@@ -184,6 +186,7 @@ function ReelItem({ startup, isActive }: { startup: ScoredStartupDiscoveryItem; 
 
   const [showMetrics, setShowMetrics] = useState(false);
   const [expandDesc, setExpandDesc] = useState(false);
+  const [isShareOpen, setIsShareOpen] = useState(false);
 
   // Play/pause based on scroll active status
   useEffect(() => {
@@ -359,6 +362,14 @@ function ReelItem({ startup, isActive }: { startup: ScoredStartupDiscoveryItem; 
           <span className="text-[10px] font-semibold text-white/70">Data</span>
         </button>
 
+        {/* Share */}
+        <button onClick={() => setIsShareOpen(true)} className="flex flex-col items-center gap-1 group">
+          <div className="flex h-11 w-11 items-center justify-center rounded-full bg-black/40 backdrop-blur-md border border-white/10 text-white/80 group-hover:text-emerald-400 transition-all">
+            <Share2 className="h-5 w-5" />
+          </div>
+          <span className="text-[10px] font-semibold text-white/70">Share</span>
+        </button>
+
         {/* Direct Message */}
         <Link href="/messages" className="flex flex-col items-center gap-1 group">
           <div className="flex h-11 w-11 items-center justify-center rounded-full bg-black/40 backdrop-blur-md border border-white/10 text-white/80 group-hover:text-emerald-400 transition-all">
@@ -477,6 +488,12 @@ function ReelItem({ startup, isActive }: { startup: ScoredStartupDiscoveryItem; 
           )}
         </div>
       )}
+
+      <ShareModal
+        isOpen={isShareOpen}
+        onClose={() => setIsShareOpen(false)}
+        title={startup.startup_name}
+      />
     </div>
   );
 }
