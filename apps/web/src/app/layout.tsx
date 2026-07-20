@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import type { ReactNode } from "react";
 import "@/styles/globals.css";
+import { ClientProviders } from "@/components/client-providers";
 
 export const metadata: Metadata = {
   title: "BridgeCapita",
@@ -14,7 +15,9 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" className="dark">
-      <body className="min-h-screen overflow-x-hidden">{children}</body>
+      <body className="min-h-screen overflow-x-hidden">
+        <ClientProviders>{children}</ClientProviders>
+      </body>
     </html>
   );
 }

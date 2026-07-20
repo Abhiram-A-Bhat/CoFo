@@ -17,6 +17,7 @@ import {
 
 import { getMe, logout, updateMyPreferences, type AuthUser } from "@/lib/api/auth";
 import { getApiErrorMessage } from "@/lib/api/errors";
+import { listConversations } from "@/lib/api/messaging";
 
 import { CommandPalette } from "@/components/command-palette";
 
@@ -27,6 +28,7 @@ export default function DashboardLayout({ children }: { children: ReactNode }) {
   const [loading, setLoading] = useState(true);
   const [authenticated, setAuthenticated] = useState(false);
   const [workspace, setWorkspace] = useState<"founder" | "investor">("founder");
+  const [unreadCount, setUnreadCount] = useState(0);
 
 
   useEffect(() => {
@@ -65,6 +67,21 @@ export default function DashboardLayout({ children }: { children: ReactNode }) {
     }
     initAuth();
   }, [router, pathname]);
+
+  // Fetch unread message count periodically
+  useEffect(() => {
+    if (!authenticated) return;
+    async function fetchUnread() {
+      try {
+        const res = await listConversations();
+        const total = res.items.reduce((sum: number, c: { unread_count: number }) => sum + (c.unread_count || 0), 0);
+        setUnreadCount(total);
+      } catch (_) {}
+    }
+    fetchUnread();
+    const interval = setInterval(fetchUnread, 30000); // every 30s
+    return () => clearInterval(interval);
+  }, [authenticated]);
 
   const handleWorkspaceToggle = () => {
     const nextWS = workspace === "founder" ? "investor" : "founder";
@@ -283,6 +300,14 @@ export default function DashboardLayout({ children }: { children: ReactNode }) {
           <span className="text-[14px] font-semibold text-white">BridgeCapita</span>
         </Link>
         <div className="flex items-center gap-3">
+          {/* Workspace toggle pill */}
+          <button
+            onClick={handleWorkspaceToggle}
+            className="flex h-7 items-center gap-1.5 rounded-full border border-white/10 bg-white/[0.04] px-2.5 text-[10px] font-semibold text-white/60 hover:text-white hover:border-white/20 transition-all"
+          >
+            <RefreshCw className="h-3 w-3" />
+            <span className="capitalize">{workspace}</span>
+          </button>
           <Link href="/settings" className="text-white/60 hover:text-white p-1 rounded-lg hover:bg-white/[0.04] transition-colors">
             <Settings className="h-4 w-4" />
           </Link>
@@ -312,16 +337,27 @@ export default function DashboardLayout({ children }: { children: ReactNode }) {
         {menuItems.slice(0, 5).map((item) => {
           const Icon = item.icon;
           const isActive = pathname === item.href;
+          const isMessages = item.label === "Messages";
           return (
             <Link
               key={item.href}
               href={item.href}
-              className={`flex flex-col items-center justify-center flex-1 py-2 text-[10px] transition-all duration-200 ${
+              className={`relative flex flex-col items-center justify-center flex-1 py-2 text-[10px] transition-all duration-200 ${
                 isActive ? "text-emerald-400 font-semibold" : "text-white/50 hover:text-white"
               }`}
             >
-              <Icon className={`h-4 w-4 mb-1 ${isActive ? "scale-110 text-emerald-400" : ""}`} />
+              <div className="relative">
+                <Icon className={`h-4 w-4 mb-1 ${isActive ? "scale-110 text-emerald-400" : ""}`} />
+                {isMessages && unreadCount > 0 && (
+                  <span className="absolute -top-1.5 -right-2 flex h-4 min-w-[16px] items-center justify-center rounded-full bg-emerald-500 px-1 text-[9px] font-bold text-white">
+                    {unreadCount > 9 ? "9+" : unreadCount}
+                  </span>
+                )}
+              </div>
               <span className="truncate">{item.label}</span>
+              {isActive && (
+                <div className="absolute bottom-0 left-1/2 -translate-x-1/2 h-0.5 w-6 rounded-full bg-emerald-400" />
+              )}
             </Link>
           );
         })}

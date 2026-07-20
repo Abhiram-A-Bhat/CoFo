@@ -1,6 +1,8 @@
 "use client";
 
 import { ArrowRight, Building2, Loader2, Sparkles, Target, BrainCircuit } from "lucide-react";
+import { MatchScoreRing } from "@/components/match-score-ring";
+import { Skeleton } from "@/components/ui/skeleton";
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 
@@ -121,9 +123,25 @@ export function MatchingPage() {
         {error ? <Alert>{error}</Alert> : null}
 
         {isLoading ? (
-          <div className="flex h-48 items-center justify-center rounded-xl border border-white/10 bg-white/[0.04] text-sm text-muted-foreground">
-            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-            Loading matches
+          <div className="grid gap-4 lg:grid-cols-2">
+            {[1, 2, 3, 4].map((i) => (
+              <div key={i} className="rounded-2xl border border-white/[0.08] bg-[#0d0d0d] p-5 space-y-4">
+                <div className="flex items-start justify-between">
+                  <div className="space-y-2 flex-1">
+                    <Skeleton className="h-5 w-32" />
+                    <Skeleton className="h-3 w-24" />
+                  </div>
+                  <Skeleton className="h-14 w-14 rounded-full" />
+                </div>
+                <Skeleton className="h-3 w-full" />
+                <Skeleton className="h-3 w-4/5" />
+                <div className="rounded-xl border border-white/[0.06] p-3 space-y-2">
+                  <Skeleton className="h-2 w-20" />
+                  <Skeleton className="h-2 w-full" />
+                  <Skeleton className="h-2 w-3/4" />
+                </div>
+              </div>
+            ))}
           </div>
         ) : activeItems.length > 0 ? (
           <div className="grid gap-4 lg:grid-cols-2">
@@ -170,7 +188,7 @@ function InvestorMatchCard({ match }: { match: InvestorMatch }) {
             <CardTitle className="text-lg text-white">{match.name}</CardTitle>
             <CardDescription className="text-white/40">{match.organization}</CardDescription>
           </div>
-          <ScoreBadge score={match.match_score} />
+          <MatchScoreRing score={match.match_score} size={56} showLabel />
         </div>
         <div className="flex flex-wrap items-center gap-2">
           <VerificationBadges badges={match.verification_badges} />
@@ -196,7 +214,7 @@ function StartupMatchCard({ match }: { match: StartupMatch }) {
             <CardTitle className="text-lg text-white">{match.startup_name}</CardTitle>
             <CardDescription className="text-white/40">{match.industry}</CardDescription>
           </div>
-          <ScoreBadge score={match.match_score} />
+          <MatchScoreRing score={match.match_score} size={56} showLabel />
         </div>
         <div className="flex flex-wrap items-center gap-2">
           <VerificationBadges badges={match.verification_badges} />
@@ -211,14 +229,7 @@ function StartupMatchCard({ match }: { match: StartupMatch }) {
   );
 }
 
-function ScoreBadge({ score }: { score: number }) {
-  return (
-    <div className="flex h-14 w-14 shrink-0 flex-col items-center justify-center rounded-xl border border-emerald-500/30 bg-emerald-500/10">
-      <span className="text-lg font-bold leading-none text-emerald-400">{score}%</span>
-      <span className="text-[9px] font-semibold uppercase tracking-[0.14em] text-white/40 mt-1">Match</span>
-    </div>
-  );
-}
+// ScoreBadge replaced by MatchScoreRing component
 
 function ReasonList({ reasons }: { reasons: string[] }) {
   return (

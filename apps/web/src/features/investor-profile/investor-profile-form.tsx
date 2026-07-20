@@ -18,6 +18,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { MoneyInput } from "@/components/ui/money-input";
 import { getApiErrorMessage } from "@/lib/api/errors";
+import { ProfileCompleteness, getInvestorProfileFields } from "@/components/profile-completeness";
 import {
   getMyInvestorProfile,
   saveMyInvestorProfile,
@@ -142,6 +143,7 @@ export function InvestorProfileForm() {
           </div>
         ) : (
           <form className="space-y-6" onSubmit={onSubmit}>
+            <ProfileCompleteness fields={getInvestorProfileFields({ name, organization, investment_thesis: investmentThesis, ticket_size: ticketSize } as unknown as Record<string, unknown>)} />
             {error ? <Alert>{error}</Alert> : null}
             {success ? (
               <div className="rounded-lg border border-primary/30 bg-primary/10 px-4 py-3 text-sm text-primary">

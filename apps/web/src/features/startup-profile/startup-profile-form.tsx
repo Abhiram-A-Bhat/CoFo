@@ -21,6 +21,7 @@ import { VerificationBadges } from "@/features/profile-verification/verification
 import { AvatarUploader } from "@/components/avatar-uploader";
 import { env } from "@/lib/config/env";
 import { getApiErrorMessage } from "@/lib/api/errors";
+import { ProfileCompleteness, getStartupProfileFields } from "@/components/profile-completeness";
 import type { VerificationBadge } from "@/lib/api/profile-verification";
 import {
   getMyStartupProfile,
@@ -302,6 +303,7 @@ export function StartupProfileForm() {
           </div>
         ) : (
           <div className="space-y-8">
+            <ProfileCompleteness fields={getStartupProfileFields(profile as unknown as Record<string, unknown>)} />
             {error ? <Alert>{error}</Alert> : null}
             {success ? (
               <div className="rounded-lg border border-primary/30 bg-primary/10 px-4 py-3 text-sm text-primary">

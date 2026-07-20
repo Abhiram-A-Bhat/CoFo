@@ -201,61 +201,150 @@ export default function SettingsPage() {
           )}
 
           {activeTab === "profile" && (
-            <Card className="border-white/[0.08] bg-[#0d0d0d]">
-              <CardHeader>
-                <CardTitle className="text-white">Profile Details</CardTitle>
-                <CardDescription className="text-white/40">
-                  Update your basic info. Your role cannot be changed directly.
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                <form onSubmit={handleProfileSave} className="space-y-4">
-                  <div className="space-y-1.5">
-                    <Label htmlFor="email" className="text-white/60">Email address</Label>
-                    <Input
-                      id="email"
-                      value={email}
-                      disabled
-                      className="bg-white/[0.02] border-white/10 text-white/50 cursor-not-allowed"
-                    />
-                  </div>
-
-                  <div className="space-y-1.5">
-                    <Label htmlFor="fullName" className="text-white/60">Full Name</Label>
-                    <Input
-                      id="fullName"
-                      value={fullName}
-                      onChange={(e) => setFullName(e.target.value)}
-                      placeholder="e.g. Jane Doe"
-                      className="bg-white/[0.04] border-white/10 text-white focus:border-emerald-500 focus:ring-emerald-500"
-                    />
-                  </div>
-
-                  <div className="space-y-1.5">
-                    <Label className="text-white/60">Current Role</Label>
-                    <div className="flex items-center gap-3 rounded-xl border border-white/10 bg-white/[0.02] px-4 py-3">
-                      <Briefcase className="h-4 w-4 text-emerald-400" />
-                      <div className="text-[13px]">
-                        <span className="font-semibold text-white capitalize">{user?.role}</span>
-                        <span className="text-white/40 block text-xs">
-                          {user?.role === "founder" 
-                            ? "Sourcing capital, posting pitches" 
-                            : "Evaluating startups, matching criteria"}
+            <>
+              {/* Account Overview Card */}
+              <Card className="border-white/[0.08] bg-[#0d0d0d] overflow-hidden">
+                <div className="h-1 bg-gradient-to-r from-emerald-500 via-sky-500 to-violet-500" />
+                <CardContent className="p-5">
+                  <div className="flex items-center gap-4">
+                    <div className="flex h-14 w-14 items-center justify-center rounded-full bg-gradient-to-br from-emerald-500/20 to-sky-500/20 border border-white/10 text-lg font-bold text-white">
+                      {user?.full_name?.split(" ").map(n => n[0]).join("").slice(0, 2).toUpperCase() || "U"}
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <h3 className="text-base font-semibold text-white truncate">{user?.full_name || "Unnamed"}</h3>
+                      <p className="text-xs text-white/40 truncate">{user?.email}</p>
+                    </div>
+                    <div className="flex flex-col items-end gap-1.5">
+                      <span className="inline-flex items-center gap-1.5 rounded-full bg-emerald-500/10 border border-emerald-500/20 px-2.5 py-1 text-[11px] font-semibold text-emerald-400 capitalize">
+                        <Briefcase className="h-3 w-3" />
+                        {user?.role}
+                      </span>
+                      {user?.google_id && (
+                        <span className="inline-flex items-center gap-1 rounded-full bg-sky-500/10 border border-sky-500/20 px-2 py-0.5 text-[10px] font-medium text-sky-400">
+                          <ShieldCheck className="h-2.5 w-2.5" />
+                          Google linked
                         </span>
-                      </div>
+                      )}
                     </div>
                   </div>
+                  <div className="mt-4 pt-4 border-t border-white/[0.06] grid grid-cols-3 gap-3">
+                    <div className="text-center">
+                      <p className="text-[10px] uppercase tracking-wider text-white/30 font-semibold">Member since</p>
+                      <p className="text-xs font-medium text-white/70 mt-0.5">
+                        {user?.created_at ? new Intl.DateTimeFormat("en-US", { month: "short", year: "numeric" }).format(new Date(user.created_at)) : "—"}
+                      </p>
+                    </div>
+                    <div className="text-center">
+                      <p className="text-[10px] uppercase tracking-wider text-white/30 font-semibold">Account</p>
+                      <p className="text-xs font-medium text-emerald-400 mt-0.5">Active</p>
+                    </div>
+                    <div className="text-center">
+                      <p className="text-[10px] uppercase tracking-wider text-white/30 font-semibold">Quick actions</p>
+                      <p className="text-xs font-medium text-white/50 mt-0.5">
+                        <kbd className="px-1.5 py-0.5 rounded bg-white/[0.06] border border-white/10 text-[10px] font-mono">⌘K</kbd>
+                      </p>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
 
-                  <Button
-                    type="submit"
-                    disabled={isSaving}
-                    className="w-full bg-emerald-500 text-black hover:bg-emerald-400 font-semibold"
-                  >
-                    {isSaving ? "Saving changes..." : "Save changes"}
-                  </Button>
-                </form>
-              </CardContent>
-            </Card>
+              {/* Profile Details Card */}
+              <Card className="border-white/[0.08] bg-[#0d0d0d]">
+                <CardHeader>
+                  <CardTitle className="text-white">Profile Details</CardTitle>
+                  <CardDescription className="text-white/40">
+                    Update your basic info. Your role cannot be changed directly.
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <form onSubmit={handleProfileSave} className="space-y-4">
+                    <div className="space-y-1.5">
+                      <Label htmlFor="email" className="text-white/60">Email address</Label>
+                      <Input
+                        id="email"
+                        value={email}
+                        disabled
+                        className="bg-white/[0.02] border-white/10 text-white/50 cursor-not-allowed"
+                      />
+                    </div>
+
+                    <div className="space-y-1.5">
+                      <Label htmlFor="fullName" className="text-white/60">Full Name</Label>
+                      <Input
+                        id="fullName"
+                        value={fullName}
+                        onChange={(e) => setFullName(e.target.value)}
+                        placeholder="e.g. Jane Doe"
+                        className="bg-white/[0.04] border-white/10 text-white focus:border-emerald-500 focus:ring-emerald-500"
+                      />
+                    </div>
+
+                    <div className="space-y-1.5">
+                      <Label className="text-white/60">Current Role</Label>
+                      <div className="flex items-center gap-3 rounded-xl border border-white/10 bg-white/[0.02] px-4 py-3">
+                        <Briefcase className="h-4 w-4 text-emerald-400" />
+                        <div className="text-[13px]">
+                          <span className="font-semibold text-white capitalize">{user?.role}</span>
+                          <span className="text-white/40 block text-xs">
+                            {user?.role === "founder" 
+                              ? "Sourcing capital, posting pitches" 
+                              : "Evaluating startups, matching criteria"}
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+
+                    <Button
+                      type="submit"
+                      disabled={isSaving}
+                      className="w-full bg-emerald-500 text-black hover:bg-emerald-400 font-semibold"
+                    >
+                      {isSaving ? "Saving changes..." : "Save changes"}
+                    </Button>
+                  </form>
+                </CardContent>
+              </Card>
+
+              {/* Danger Zone */}
+              <Card className="border-red-500/20 bg-red-950/10">
+                <CardHeader>
+                  <CardTitle className="text-red-400 text-base">Danger Zone</CardTitle>
+                  <CardDescription className="text-white/30">
+                    These actions are irreversible. Proceed with caution.
+                  </CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-3">
+                  <div className="flex items-center justify-between rounded-xl border border-red-500/10 bg-red-500/5 px-4 py-3">
+                    <div>
+                      <p className="text-sm font-medium text-white/80">Deactivate Account</p>
+                      <p className="text-xs text-white/30">Temporarily disable your account. You can reactivate later.</p>
+                    </div>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="border-red-500/30 text-red-400 hover:bg-red-500/10 hover:text-red-300 text-xs shrink-0"
+                      onClick={() => alert("Contact support at help@bridgecapita.com to deactivate.")}
+                    >
+                      Deactivate
+                    </Button>
+                  </div>
+                  <div className="flex items-center justify-between rounded-xl border border-red-500/10 bg-red-500/5 px-4 py-3">
+                    <div>
+                      <p className="text-sm font-medium text-white/80">Delete Account</p>
+                      <p className="text-xs text-white/30">Permanently delete your account and all associated data.</p>
+                    </div>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="border-red-500/30 text-red-400 hover:bg-red-500/10 hover:text-red-300 text-xs shrink-0"
+                      onClick={() => alert("Contact support at help@bridgecapita.com to delete your account.")}
+                    >
+                      Delete
+                    </Button>
+                  </div>
+                </CardContent>
+              </Card>
+            </>
           )}
 
           {activeTab === "security" && (

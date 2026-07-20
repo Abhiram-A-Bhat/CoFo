@@ -9,6 +9,7 @@ export type AuthUser = {
   active_workspace: "founder" | "investor" | null;
   is_active: boolean;
   created_at: string;
+  google_id?: string | null;
 };
 
 export type AuthResponse = {

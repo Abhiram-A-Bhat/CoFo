@@ -1,4 +1,7 @@
+"use client";
+
 import Link from "next/link";
+import { useEffect, useRef, useState, type ReactNode } from "react";
 import {
   ArrowRight,
   TrendingUp,
@@ -9,15 +12,150 @@ import {
   MessageSquare,
   ChevronRight,
   CheckCircle,
+  ChevronDown,
+  Menu,
+  X,
 } from "lucide-react";
 import { WaveBackground } from "@/components/wave-background";
+
+// ─────────────────────────────────────────────
+// ANIMATED COUNTER HOOK
+// ─────────────────────────────────────────────
+function useAnimatedCounter(target: number, duration = 1500) {
+  const [count, setCount] = useState(0);
+  const [started, setStarted] = useState(false);
+  const ref = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const el = ref.current;
+    if (!el) return;
+
+    const obs = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting && !started) {
+          setStarted(true);
+        }
+      },
+      { threshold: 0.3 }
+    );
+    obs.observe(el);
+    return () => obs.disconnect();
+  }, [started]);
+
+  useEffect(() => {
+    if (!started) return;
+
+    let frame: number;
+    const start = performance.now();
+
+    function animate(now: number) {
+      const elapsed = now - start;
+      const progress = Math.min(elapsed / duration, 1);
+      const eased = 1 - Math.pow(1 - progress, 3);
+      setCount(Math.round(target * eased));
+      if (progress < 1) {
+        frame = requestAnimationFrame(animate);
+      }
+    }
+
+    frame = requestAnimationFrame(animate);
+    return () => cancelAnimationFrame(frame);
+  }, [started, target, duration]);
+
+  return { count, ref };
+}
+
+// ─────────────────────────────────────────────
+// SCROLL-REVEAL WRAPPER
+// ─────────────────────────────────────────────
+function ScrollReveal({
+  children,
+  className = "",
+  delay = 0,
+}: {
+  children: ReactNode;
+  className?: string;
+  delay?: number;
+}) {
+  const ref = useRef<HTMLDivElement>(null);
+  const [visible, setVisible] = useState(false);
+
+  useEffect(() => {
+    const el = ref.current;
+    if (!el) return;
+
+    const obs = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) {
+          setTimeout(() => setVisible(true), delay);
+          obs.unobserve(el);
+        }
+      },
+      { threshold: 0.1 }
+    );
+    obs.observe(el);
+    return () => obs.disconnect();
+  }, [delay]);
+
+  return (
+    <div
+      ref={ref}
+      className={`transition-all duration-700 ease-out ${
+        visible ? "translate-y-0 opacity-100" : "translate-y-8 opacity-0"
+      } ${className}`}
+    >
+      {children}
+    </div>
+  );
+}
+
+// ─────────────────────────────────────────────
+// FAQ ACCORDION
+// ─────────────────────────────────────────────
+function FAQItem({ q, a }: { q: string; a: string }) {
+  const [open, setOpen] = useState(false);
+  const contentRef = useRef<HTMLDivElement>(null);
+  const [height, setHeight] = useState(0);
+
+  useEffect(() => {
+    if (contentRef.current) {
+      setHeight(contentRef.current.scrollHeight);
+    }
+  }, [open]);
+
+  return (
+    <button
+      onClick={() => setOpen(!open)}
+      className="w-full text-left rounded-2xl border border-white/[0.08] bg-white/[0.02] p-7 hover:bg-white/[0.04] transition-colors group"
+    >
+      <div className="flex items-start justify-between gap-4">
+        <h3 className="text-[15px] font-semibold">{q}</h3>
+        <ChevronDown
+          className={`h-4 w-4 mt-0.5 shrink-0 text-white/30 transition-transform duration-300 ${
+            open ? "rotate-180" : ""
+          }`}
+        />
+      </div>
+      <div
+        style={{ maxHeight: open ? height : 0 }}
+        className="overflow-hidden transition-all duration-400 ease-in-out"
+      >
+        <div ref={contentRef} className="pt-3">
+          <p className="text-[13px] leading-relaxed text-white/40">{a}</p>
+        </div>
+      </div>
+    </button>
+  );
+}
 
 // ─────────────────────────────────────────────
 // DATA
 // ─────────────────────────────────────────────
 const stats = [
-  { value: "$1.2B+", label: "Capital being sought" },
-  { value: "3 days", label: "Avg. time to first match" },
+  { value: "₹100Cr+", numericValue: 100, suffix: "Cr+", prefix: "₹", label: "Capital being sought" },
+  { value: "3", numericValue: 3, suffix: "", prefix: "", label: "Avg. days to first match" },
+  { value: "500+", numericValue: 500, suffix: "+", prefix: "", label: "Founders onboarded" },
+  { value: "200+", numericValue: 200, suffix: "+", prefix: "", label: "Active investors" },
 ];
 
 const features = [
@@ -106,6 +244,8 @@ const faqs = [
 // PAGE
 // ─────────────────────────────────────────────
 export default function HomePage() {
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+
   return (
     <div className="min-h-screen bg-[#0a0a0a] text-white selection:bg-white/10">
       {/* ── NAVBAR ── */}
@@ -119,7 +259,7 @@ export default function HomePage() {
             <span className="text-[15px] font-semibold tracking-tight">BridgeCapita</span>
           </Link>
 
-          {/* Nav links */}
+          {/* Nav links — desktop */}
           <nav className="hidden md:flex items-center gap-8 text-[13px] text-white/50 font-medium">
             <a href="#features" className="hover:text-white transition-colors">Features</a>
             <a href="#how" className="hover:text-white transition-colors">How it works</a>
@@ -127,11 +267,11 @@ export default function HomePage() {
             <a href="#faq" className="hover:text-white transition-colors">FAQ</a>
           </nav>
 
-          {/* CTA */}
+          {/* CTA + mobile toggle */}
           <div className="flex items-center gap-3">
             <Link
               href="/login"
-              className="text-[13px] font-medium text-white/60 hover:text-white transition-colors px-3 py-1.5"
+              className="hidden sm:block text-[13px] font-medium text-white/60 hover:text-white transition-colors px-3 py-1.5"
             >
               Log in
             </Link>
@@ -141,7 +281,32 @@ export default function HomePage() {
             >
               Get started <ChevronRight className="h-3.5 w-3.5" />
             </Link>
+            {/* Mobile hamburger */}
+            <button
+              className="md:hidden p-1.5 rounded-lg text-white/50 hover:text-white hover:bg-white/[0.05] transition-colors"
+              onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+            >
+              {mobileMenuOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
+            </button>
           </div>
+        </div>
+
+        {/* Mobile menu */}
+        <div
+          className={`md:hidden overflow-hidden transition-all duration-300 ease-in-out ${
+            mobileMenuOpen ? "max-h-64 border-t border-white/[0.06]" : "max-h-0"
+          }`}
+        >
+          <nav className="flex flex-col gap-1 px-5 py-4">
+            <a href="#features" onClick={() => setMobileMenuOpen(false)} className="px-3 py-2.5 rounded-lg text-[14px] text-white/60 hover:text-white hover:bg-white/[0.04] transition-colors">Features</a>
+            <a href="#how" onClick={() => setMobileMenuOpen(false)} className="px-3 py-2.5 rounded-lg text-[14px] text-white/60 hover:text-white hover:bg-white/[0.04] transition-colors">How it works</a>
+            <a href="#testimonials" onClick={() => setMobileMenuOpen(false)} className="px-3 py-2.5 rounded-lg text-[14px] text-white/60 hover:text-white hover:bg-white/[0.04] transition-colors">Stories</a>
+            <a href="#faq" onClick={() => setMobileMenuOpen(false)} className="px-3 py-2.5 rounded-lg text-[14px] text-white/60 hover:text-white hover:bg-white/[0.04] transition-colors">FAQ</a>
+            <div className="mt-2 pt-3 border-t border-white/[0.06] flex gap-3">
+              <Link href="/login" className="flex-1 text-center px-3 py-2.5 rounded-lg text-[14px] text-white/60 border border-white/10 hover:text-white transition-colors">Log in</Link>
+              <Link href="/signup" className="flex-1 text-center px-3 py-2.5 rounded-lg text-[14px] font-semibold text-[#0a0a0a] bg-white hover:bg-white/90 transition-colors">Sign up</Link>
+            </div>
+          </nav>
         </div>
       </header>
 
@@ -155,75 +320,91 @@ export default function HomePage() {
         </div>
         
         <div className="relative z-10 mx-auto max-w-7xl px-5 pt-24 pb-28 lg:px-8 lg:pt-32 lg:pb-36 text-center">
-          {/* Eyebrow pill */}
-          <div className="mb-8 inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/[0.04] px-4 py-1.5 text-[12px] font-medium text-white/60">
-            <span className="h-1.5 w-1.5 rounded-full bg-emerald-400 animate-pulse" />
-            Now live — connecting founders and investors
-          </div>
+          <ScrollReveal>
+            {/* Eyebrow pill */}
+            <div className="mb-8 inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/[0.04] px-4 py-1.5 text-[12px] font-medium text-white/60">
+              <span className="h-1.5 w-1.5 rounded-full bg-emerald-400 animate-pulse" />
+              Now live — connecting founders and investors
+            </div>
+          </ScrollReveal>
 
-          <h1 className="mx-auto max-w-4xl text-5xl font-bold tracking-[-0.03em] leading-[1.05] sm:text-6xl lg:text-[72px]">
-            The fundraising platform
-            <br />
-            <span className="text-white/40">built for both sides</span>
-          </h1>
+          <ScrollReveal delay={100}>
+            <h1 className="mx-auto max-w-4xl text-5xl font-bold tracking-[-0.03em] leading-[1.05] sm:text-6xl lg:text-[72px]">
+              The fundraising platform
+              <br />
+              <span className="text-white/40">built for both sides</span>
+            </h1>
+          </ScrollReveal>
 
-          <p className="mx-auto mt-7 max-w-xl text-[17px] leading-relaxed text-white/50">
-            BridgeCapita connects founders and investors through structured profiles, ranked discovery, and direct messaging — in one focused workspace.
-          </p>
+          <ScrollReveal delay={200}>
+            <p className="mx-auto mt-7 max-w-xl text-[17px] leading-relaxed text-white/50">
+              BridgeCapita connects founders and investors through structured profiles, ranked discovery, and direct messaging — in one focused workspace.
+            </p>
+          </ScrollReveal>
 
-          <div className="mt-10 flex flex-col sm:flex-row items-center justify-center gap-3">
-            <Link
-              href="/signup"
-              className="inline-flex h-12 items-center gap-2 rounded-xl bg-white px-7 text-[15px] font-semibold text-[#0a0a0a] hover:bg-white/90 transition-all hover:gap-3"
-            >
-              Create free account <ArrowRight className="h-4 w-4" />
-            </Link>
-            <Link
-              href="/login"
-              className="inline-flex h-12 items-center gap-2 rounded-xl border border-white/10 bg-white/[0.04] px-7 text-[15px] font-medium text-white/70 hover:bg-white/[0.08] hover:text-white transition-all"
-            >
-              Sign in to your workspace
-            </Link>
-          </div>
+          <ScrollReveal delay={300}>
+            <div className="mt-10 flex flex-col sm:flex-row items-center justify-center gap-3">
+              <Link
+                href="/signup"
+                className="group inline-flex h-12 items-center gap-2 rounded-xl bg-white px-7 text-[15px] font-semibold text-[#0a0a0a] hover:bg-white/90 transition-all hover:shadow-[0_0_32px_rgba(255,255,255,0.15)]"
+              >
+                Create free account <ArrowRight className="h-4 w-4 group-hover:translate-x-0.5 transition-transform" />
+              </Link>
+              <Link
+                href="/login"
+                className="inline-flex h-12 items-center gap-2 rounded-xl border border-white/10 bg-white/[0.04] px-7 text-[15px] font-medium text-white/70 hover:bg-white/[0.08] hover:text-white transition-all"
+              >
+                Sign in to your workspace
+              </Link>
+            </div>
+          </ScrollReveal>
 
-          {/* Stats bar */}
-          <div className="mx-auto mt-20 grid max-w-3xl grid-cols-2 gap-px sm:grid-cols-4 rounded-2xl overflow-hidden border border-white/[0.08] bg-white/[0.04]">
-            {stats.map((s) => (
-              <div key={s.label} className="flex flex-col items-center justify-center py-6 px-4">
-                <span className="text-2xl font-bold tracking-tight">{s.value}</span>
-                <span className="mt-1 text-[12px] text-white/40 font-medium">{s.label}</span>
-              </div>
-            ))}
-          </div>
+          {/* Animated Stats bar */}
+          <ScrollReveal delay={400}>
+            <div className="mx-auto mt-20 grid max-w-3xl grid-cols-2 gap-px sm:grid-cols-4 rounded-2xl overflow-hidden border border-white/[0.08] bg-white/[0.04]">
+              {stats.map((s) => {
+                const counter = useAnimatedCounter(s.numericValue);
+                return (
+                  <div key={s.label} ref={counter.ref} className="flex flex-col items-center justify-center py-6 px-4">
+                    <span className="text-2xl font-bold tracking-tight">
+                      {s.prefix}{counter.count}{s.suffix}
+                    </span>
+                    <span className="mt-1 text-[12px] text-white/40 font-medium">{s.label}</span>
+                  </div>
+                );
+              })}
+            </div>
+          </ScrollReveal>
         </div>
       </section>
 
       {/* ── FEATURES ── */}
       <section id="features" className="border-b border-white/[0.06] py-28 px-5 lg:px-8">
         <div className="mx-auto max-w-7xl">
-          <div className="mb-16 max-w-xl">
-            <p className="text-[12px] font-semibold uppercase tracking-[0.12em] text-white/30 mb-4">Platform</p>
-            <h2 className="text-4xl font-bold tracking-tight leading-[1.1]">
-              Everything in one place.
-              <br />
-              <span className="text-white/30">Nothing that doesn't belong.</span>
-            </h2>
-          </div>
+          <ScrollReveal>
+            <div className="mb-16 max-w-xl">
+              <p className="text-[12px] font-semibold uppercase tracking-[0.12em] text-white/30 mb-4">Platform</p>
+              <h2 className="text-4xl font-bold tracking-tight leading-[1.1]">
+                Everything in one place.
+                <br />
+                <span className="text-white/30">Nothing that doesn&apos;t belong.</span>
+              </h2>
+            </div>
+          </ScrollReveal>
 
           <div className="grid gap-px sm:grid-cols-2 lg:grid-cols-3 rounded-2xl overflow-hidden border border-white/[0.08] bg-white/[0.04]">
-            {features.map((f) => {
+            {features.map((f, i) => {
               const Icon = f.icon;
               return (
-                <div
-                  key={f.title}
-                  className="group p-8 hover:bg-white/[0.03] transition-colors duration-300"
-                >
-                  <div className="mb-5 inline-flex h-10 w-10 items-center justify-center rounded-xl border border-white/10 bg-white/[0.05] text-white/60 group-hover:border-white/20 group-hover:text-white transition-all">
-                    <Icon className="h-5 w-5" />
+                <ScrollReveal key={f.title} delay={i * 80}>
+                  <div className="group p-8 hover:bg-white/[0.03] transition-colors duration-300 h-full">
+                    <div className="mb-5 inline-flex h-10 w-10 items-center justify-center rounded-xl border border-white/10 bg-white/[0.05] text-white/60 group-hover:border-white/20 group-hover:text-white group-hover:scale-110 transition-all duration-300">
+                      <Icon className="h-5 w-5" />
+                    </div>
+                    <h3 className="mb-2 text-[15px] font-semibold text-white">{f.title}</h3>
+                    <p className="text-[13px] leading-relaxed text-white/40">{f.description}</p>
                   </div>
-                  <h3 className="mb-2 text-[15px] font-semibold text-white">{f.title}</h3>
-                  <p className="text-[13px] leading-relaxed text-white/40">{f.description}</p>
-                </div>
+                </ScrollReveal>
               );
             })}
           </div>
@@ -233,14 +414,16 @@ export default function HomePage() {
       {/* ── HOW IT WORKS ── */}
       <section id="how" className="border-b border-white/[0.06] py-28 px-5 lg:px-8">
         <div className="mx-auto max-w-7xl">
-          <div className="mb-16 max-w-xl">
-            <p className="text-[12px] font-semibold uppercase tracking-[0.12em] text-white/30 mb-4">Process</p>
-            <h2 className="text-4xl font-bold tracking-tight leading-tight">
-              From profile to meeting
-              <br />
-              <span className="text-white/30">in three steps.</span>
-            </h2>
-          </div>
+          <ScrollReveal>
+            <div className="mb-16 max-w-xl">
+              <p className="text-[12px] font-semibold uppercase tracking-[0.12em] text-white/30 mb-4">Process</p>
+              <h2 className="text-4xl font-bold tracking-tight leading-tight">
+                From profile to meeting
+                <br />
+                <span className="text-white/30">in three steps.</span>
+              </h2>
+            </div>
+          </ScrollReveal>
 
           <div className="grid gap-6 md:grid-cols-3">
             {[
@@ -262,23 +445,24 @@ export default function HomePage() {
                 desc: "Message directly from a match card. No cold outreach, no gatekeepers. Both sides see each other's full profiles before replying.",
                 checks: ["In-product direct messaging", "Full profile access before reply", "Verified identity on both sides"],
               },
-            ].map((item) => (
-              <div
-                key={item.step}
-                className="rounded-2xl border border-white/[0.08] bg-white/[0.02] p-8 hover:bg-white/[0.04] transition-colors"
-              >
-                <div className="mb-6 text-[11px] font-bold tracking-[0.2em] text-white/20">{item.step}</div>
-                <h3 className="mb-3 text-xl font-bold">{item.title}</h3>
-                <p className="mb-6 text-[13px] leading-relaxed text-white/40">{item.desc}</p>
-                <ul className="space-y-2.5">
-                  {item.checks.map((c) => (
-                    <li key={c} className="flex items-center gap-2.5 text-[13px] text-white/50">
-                      <CheckCircle className="h-3.5 w-3.5 shrink-0 text-emerald-400" />
-                      {c}
-                    </li>
-                  ))}
-                </ul>
-              </div>
+            ].map((item, i) => (
+              <ScrollReveal key={item.step} delay={i * 120}>
+                <div className="rounded-2xl border border-white/[0.08] bg-white/[0.02] p-8 hover:bg-white/[0.04] transition-colors group h-full">
+                  <div className="mb-6 inline-flex h-10 w-10 items-center justify-center rounded-xl bg-white/[0.05] border border-white/10 text-[11px] font-bold tracking-[0.2em] text-white/40 group-hover:bg-white/[0.08] group-hover:text-white/60 transition-all">
+                    {item.step}
+                  </div>
+                  <h3 className="mb-3 text-xl font-bold">{item.title}</h3>
+                  <p className="mb-6 text-[13px] leading-relaxed text-white/40">{item.desc}</p>
+                  <ul className="space-y-2.5">
+                    {item.checks.map((c) => (
+                      <li key={c} className="flex items-center gap-2.5 text-[13px] text-white/50">
+                        <CheckCircle className="h-3.5 w-3.5 shrink-0 text-emerald-400" />
+                        {c}
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              </ScrollReveal>
             ))}
           </div>
         </div>
@@ -287,34 +471,35 @@ export default function HomePage() {
       {/* ── TESTIMONIALS ── */}
       <section id="testimonials" className="border-b border-white/[0.06] py-28 px-5 lg:px-8">
         <div className="mx-auto max-w-7xl">
-          <div className="mb-16 max-w-xl">
-            <p className="text-[12px] font-semibold uppercase tracking-[0.12em] text-white/30 mb-4">Stories</p>
-            <h2 className="text-4xl font-bold tracking-tight">
-              Used by people
-              <br />
-              <span className="text-white/30">doing real deals.</span>
-            </h2>
-          </div>
+          <ScrollReveal>
+            <div className="mb-16 max-w-xl">
+              <p className="text-[12px] font-semibold uppercase tracking-[0.12em] text-white/30 mb-4">Stories</p>
+              <h2 className="text-4xl font-bold tracking-tight">
+                Used by people
+                <br />
+                <span className="text-white/30">doing real deals.</span>
+              </h2>
+            </div>
+          </ScrollReveal>
 
           <div className="grid gap-5 lg:grid-cols-3">
-            {testimonials.map((t) => (
-              <div
-                key={t.name}
-                className="flex flex-col justify-between rounded-2xl border border-white/[0.08] bg-white/[0.02] p-8 hover:bg-white/[0.04] transition-colors"
-              >
-                <p className="text-[15px] leading-relaxed text-white/70 font-medium">
-                  &ldquo;{t.quote}&rdquo;
-                </p>
-                <div className="mt-8 flex items-center gap-3">
-                  <div className="flex h-9 w-9 items-center justify-center rounded-full bg-white/[0.08] text-[11px] font-bold text-white/60">
-                    {t.avatar}
-                  </div>
-                  <div>
-                    <p className="text-[13px] font-semibold">{t.name}</p>
-                    <p className="text-[12px] text-white/40">{t.role}</p>
+            {testimonials.map((t, i) => (
+              <ScrollReveal key={t.name} delay={i * 100}>
+                <div className="flex flex-col justify-between rounded-2xl border border-white/[0.08] bg-white/[0.02] p-8 hover:bg-white/[0.04] transition-colors h-full">
+                  <p className="text-[15px] leading-relaxed text-white/70 font-medium">
+                    &ldquo;{t.quote}&rdquo;
+                  </p>
+                  <div className="mt-8 flex items-center gap-3">
+                    <div className="flex h-9 w-9 items-center justify-center rounded-full bg-gradient-to-br from-white/[0.12] to-white/[0.04] text-[11px] font-bold text-white/60">
+                      {t.avatar}
+                    </div>
+                    <div>
+                      <p className="text-[13px] font-semibold">{t.name}</p>
+                      <p className="text-[12px] text-white/40">{t.role}</p>
+                    </div>
                   </div>
                 </div>
-              </div>
+              </ScrollReveal>
             ))}
           </div>
         </div>
@@ -323,24 +508,22 @@ export default function HomePage() {
       {/* ── FAQ ── */}
       <section id="faq" className="border-b border-white/[0.06] py-28 px-5 lg:px-8">
         <div className="mx-auto max-w-7xl">
-          <div className="mb-16 max-w-xl">
-            <p className="text-[12px] font-semibold uppercase tracking-[0.12em] text-white/30 mb-4">FAQ</p>
-            <h2 className="text-4xl font-bold tracking-tight">
-              Common questions,
-              <br />
-              <span className="text-white/30">straight answers.</span>
-            </h2>
-          </div>
+          <ScrollReveal>
+            <div className="mb-16 max-w-xl">
+              <p className="text-[12px] font-semibold uppercase tracking-[0.12em] text-white/30 mb-4">FAQ</p>
+              <h2 className="text-4xl font-bold tracking-tight">
+                Common questions,
+                <br />
+                <span className="text-white/30">straight answers.</span>
+              </h2>
+            </div>
+          </ScrollReveal>
 
           <div className="grid gap-4 md:grid-cols-2 max-w-5xl">
-            {faqs.map((faq) => (
-              <div
-                key={faq.q}
-                className="rounded-2xl border border-white/[0.08] bg-white/[0.02] p-7 hover:bg-white/[0.04] transition-colors"
-              >
-                <h3 className="mb-3 text-[15px] font-semibold">{faq.q}</h3>
-                <p className="text-[13px] leading-relaxed text-white/40">{faq.a}</p>
-              </div>
+            {faqs.map((faq, i) => (
+              <ScrollReveal key={faq.q} delay={i * 80}>
+                <FAQItem q={faq.q} a={faq.a} />
+              </ScrollReveal>
             ))}
           </div>
         </div>
@@ -348,30 +531,32 @@ export default function HomePage() {
 
       {/* ── CTA BANNER ── */}
       <section className="py-28 px-5 lg:px-8">
-        <div className="mx-auto max-w-4xl text-center">
-          <h2 className="text-5xl font-bold tracking-[-0.03em] leading-[1.05] sm:text-6xl">
-            Ready to raise
-            <br />
-            with clarity?
-          </h2>
-          <p className="mx-auto mt-6 max-w-md text-[16px] text-white/40 leading-relaxed">
-            Join founders and investors who&apos;ve replaced messy spreadsheets and cold outreach with a focused, structured workspace.
-          </p>
-          <div className="mt-10 flex flex-col sm:flex-row items-center justify-center gap-3">
-            <Link
-              href="/signup"
-              className="inline-flex h-12 items-center gap-2 rounded-xl bg-white px-8 text-[15px] font-semibold text-[#0a0a0a] hover:bg-white/90 transition-all hover:gap-3"
-            >
-              Create your account <ArrowRight className="h-4 w-4" />
-            </Link>
-            <Link
-              href="/login"
-              className="inline-flex h-12 items-center rounded-xl border border-white/10 px-8 text-[15px] font-medium text-white/50 hover:text-white hover:border-white/20 transition-all"
-            >
-              Already have an account?
-            </Link>
+        <ScrollReveal>
+          <div className="mx-auto max-w-4xl text-center">
+            <h2 className="text-5xl font-bold tracking-[-0.03em] leading-[1.05] sm:text-6xl">
+              Ready to raise
+              <br />
+              with clarity?
+            </h2>
+            <p className="mx-auto mt-6 max-w-md text-[16px] text-white/40 leading-relaxed">
+              Join founders and investors who&apos;ve replaced messy spreadsheets and cold outreach with a focused, structured workspace.
+            </p>
+            <div className="mt-10 flex flex-col sm:flex-row items-center justify-center gap-3">
+              <Link
+                href="/signup"
+                className="group inline-flex h-12 items-center gap-2 rounded-xl bg-white px-8 text-[15px] font-semibold text-[#0a0a0a] hover:bg-white/90 transition-all hover:shadow-[0_0_32px_rgba(255,255,255,0.15)]"
+              >
+                Create your account <ArrowRight className="h-4 w-4 group-hover:translate-x-0.5 transition-transform" />
+              </Link>
+              <Link
+                href="/login"
+                className="inline-flex h-12 items-center rounded-xl border border-white/10 px-8 text-[15px] font-medium text-white/50 hover:text-white hover:border-white/20 transition-all"
+              >
+                Already have an account?
+              </Link>
+            </div>
           </div>
-        </div>
+        </ScrollReveal>
       </section>
 
       {/* ── FOOTER ── */}

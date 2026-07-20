@@ -1,10 +1,11 @@
 "use client";
 
-import { Loader2, MessageSquare, Plus, Send } from "lucide-react";
+import { Loader2, MessageSquare, Plus, Send, MessagesSquare } from "lucide-react";
 import { FormEvent, useEffect, useMemo, useRef, useState } from "react";
 
 import { Alert } from "@/components/ui/alert";
 import { Badge } from "@/components/ui/badge";
+import { Skeleton } from "@/components/ui/skeleton";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -252,9 +253,17 @@ export function MessagingPage() {
             </form>
 
             {isLoadingConversations ? (
-              <div className="flex h-32 items-center justify-center text-sm text-muted-foreground">
-                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                Loading conversations
+              <div className="space-y-2">
+                {[1, 2, 3].map((i) => (
+                  <div key={i} className="rounded-xl border border-white/[0.06] p-4 space-y-2">
+                    <div className="flex justify-between">
+                      <Skeleton className="h-4 w-28" />
+                      <Skeleton className="h-4 w-4 rounded-full" />
+                    </div>
+                    <Skeleton className="h-3 w-full" />
+                    <Skeleton className="h-2.5 w-16" />
+                  </div>
+                ))}
               </div>
             ) : conversations.length > 0 ? (
               <div className="space-y-2">
@@ -279,18 +288,31 @@ export function MessagingPage() {
                         </p>
                       </div>
                       {conversation.unread_count > 0 ? (
-                        <Badge variant="outline">{conversation.unread_count}</Badge>
+                        <span className="relative flex h-5 w-5">
+                          <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-400/40" />
+                          <span className="relative inline-flex h-5 w-5 items-center justify-center rounded-full bg-emerald-500 text-[10px] font-bold text-white">
+                            {conversation.unread_count}
+                          </span>
+                        </span>
                       ) : null}
                     </div>
                     <p className="mt-3 text-xs text-muted-foreground">
-                      {formatDate(conversation.last_message?.created_at ?? conversation.updated_at)}
+                      {formatRelativeDate(conversation.last_message?.created_at ?? conversation.updated_at)}
                     </p>
                   </button>
                 ))}
               </div>
             ) : (
-              <div className="rounded-xl border border-white/10 bg-white/[0.03] p-5 text-sm text-muted-foreground">
-                Start a direct conversation with a founder or investor by entering their user ID.
+              <div className="flex flex-col items-center justify-center text-center p-8 space-y-4">
+                <div className="rounded-2xl bg-gradient-to-br from-emerald-500/10 to-sky-500/10 border border-white/[0.06] p-5">
+                  <MessagesSquare className="h-8 w-8 text-emerald-400" />
+                </div>
+                <div className="space-y-1">
+                  <h3 className="text-sm font-semibold text-white">No conversations yet</h3>
+                  <p className="text-xs text-white/40 max-w-[220px]">
+                    Start a conversation with a founder or investor by entering their user ID above.
+                  </p>
+                </div>
               </div>
             )}
           </CardContent>
@@ -309,31 +331,50 @@ export function MessagingPage() {
             {error ? <Alert>{error}</Alert> : null}
             <div className="flex-1 overflow-y-auto rounded-xl border border-white/10 bg-white/[0.025] p-4">
               {isLoadingMessages ? (
-                <div className="flex h-full items-center justify-center text-sm text-muted-foreground">
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  Loading messages
+                <div className="space-y-4 p-2">
+                  {[1, 2, 3, 4, 5].map((i) => (
+                    <div key={i} className={`flex ${i % 2 === 0 ? 'justify-end' : 'justify-start'}`}>
+                      <div className="space-y-1.5" style={{ width: `${40 + (i * 8)}%` }}>
+                        <Skeleton className="h-12 w-full rounded-2xl" />
+                        <Skeleton className={`h-2 w-12 ${i % 2 === 0 ? 'ml-auto' : ''}`} />
+                      </div>
+                    </div>
+                  ))}
                 </div>
               ) : selectedConversation ? (
                 <div className="space-y-4">
-                  {messages.map((message) => {
+                  {messages.map((message, index) => {
                     const isMine = message.sender_id !== selectedConversation.participant_user_id;
+                    const prevMessage = messages[index - 1];
+                    const sameSender = prevMessage?.sender_id === message.sender_id;
+                    const gapMinutes = prevMessage
+                      ? (new Date(message.created_at).getTime() - new Date(prevMessage.created_at).getTime()) / 60000
+                      : Infinity;
+                    const grouped = sameSender && gapMinutes < 3;
+
                     return (
                       <div
-                        className={`flex ${isMine ? "justify-end" : "justify-start"}`}
+                        className={`flex ${isMine ? "justify-end" : "justify-start"} ${grouped ? "mt-0.5" : "mt-4"}`}
                         key={message.id}
                       >
                         <div
-                          className={`max-w-[82%] rounded-2xl border px-4 py-3 text-sm shadow-sm ${
+                          className={`max-w-[82%] px-4 py-3 text-sm shadow-sm transition-all ${
                             isMine
                               ? "border-primary/30 bg-primary/15 text-foreground"
                               : "border-white/10 bg-white/[0.05] text-foreground"
+                          } ${
+                            grouped
+                              ? isMine ? "rounded-2xl rounded-tr-lg border" : "rounded-2xl rounded-tl-lg border"
+                              : "rounded-2xl border"
                           }`}
                         >
                           <p className="whitespace-pre-wrap leading-6">{message.body}</p>
-                          <div className="mt-2 flex items-center justify-end gap-2 text-[11px] text-muted-foreground">
-                            <span>{formatTime(message.created_at)}</span>
-                            {isMine ? <span>{message.read_at ? "Read" : "Sent"}</span> : null}
-                          </div>
+                          {!grouped && (
+                            <div className="mt-2 flex items-center justify-end gap-2 text-[11px] text-muted-foreground">
+                              <span>{formatRelativeTime(message.created_at)}</span>
+                              {isMine ? <span>{message.read_at ? "✓✓" : "✓"}</span> : null}
+                            </div>
+                          )}
                         </div>
                       </div>
                     );
@@ -341,8 +382,16 @@ export function MessagingPage() {
                   <div ref={messagesEndRef} />
                 </div>
               ) : (
-                <div className="flex h-full items-center justify-center text-center text-sm text-muted-foreground">
-                  Choose a conversation or start a new one.
+                <div className="flex h-full flex-col items-center justify-center text-center space-y-4 p-8">
+                  <div className="rounded-2xl bg-gradient-to-br from-sky-500/10 to-violet-500/10 border border-white/[0.06] p-5">
+                    <MessageSquare className="h-8 w-8 text-sky-400" />
+                  </div>
+                  <div className="space-y-1">
+                    <h3 className="text-sm font-semibold text-white">Select a conversation</h3>
+                    <p className="text-xs text-white/40 max-w-[200px]">
+                      Choose a conversation from the left panel or start a new one.
+                    </p>
+                  </div>
                 </div>
               )}
             </div>
@@ -373,18 +422,29 @@ export function MessagingPage() {
   );
 }
 
-function formatDate(value: string) {
-  return new Intl.DateTimeFormat("en-US", {
-    month: "short",
-    day: "numeric",
-    hour: "numeric",
-    minute: "2-digit"
-  }).format(new Date(value));
+function formatRelativeDate(value: string) {
+  const date = new Date(value);
+  const now = new Date();
+  const diffMs = now.getTime() - date.getTime();
+  const diffMin = Math.floor(diffMs / 60000);
+  const diffHr = Math.floor(diffMs / 3600000);
+  const diffDay = Math.floor(diffMs / 86400000);
+
+  if (diffMin < 1) return "Just now";
+  if (diffMin < 60) return `${diffMin}m ago`;
+  if (diffHr < 24) return `${diffHr}h ago`;
+  if (diffDay === 1) return "Yesterday";
+  if (diffDay < 7) return `${diffDay}d ago`;
+  return new Intl.DateTimeFormat("en-US", { month: "short", day: "numeric" }).format(date);
 }
 
-function formatTime(value: string) {
-  return new Intl.DateTimeFormat("en-US", {
-    hour: "numeric",
-    minute: "2-digit"
-  }).format(new Date(value));
+function formatRelativeTime(value: string) {
+  const date = new Date(value);
+  const now = new Date();
+  const diffMs = now.getTime() - date.getTime();
+  const diffMin = Math.floor(diffMs / 60000);
+
+  if (diffMin < 1) return "Just now";
+  if (diffMin < 60) return `${diffMin}m ago`;
+  return new Intl.DateTimeFormat("en-US", { hour: "numeric", minute: "2-digit" }).format(date);
 }
