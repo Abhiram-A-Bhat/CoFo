@@ -12,7 +12,11 @@ import {
   ShieldAlert, 
   LogOut, 
   RefreshCw,
-  Settings
+  Settings,
+  Kanban,
+  Bookmark,
+  BarChart2,
+  Bell
 } from "lucide-react";
 
 import { getMe, logout, updateMyPreferences, type AuthUser } from "@/lib/api/auth";
@@ -208,6 +212,9 @@ export default function DashboardLayout({ children }: { children: ReactNode }) {
     { label: "Home", href: "/pitch-feed", icon: Home },
     { label: "Explore", href: explorePath, icon: Compass },
     { label: "Matches", href: "/matching", icon: Sparkles },
+    { label: "Pipeline", href: "/pipeline", icon: Kanban },
+    { label: "Watchlist", href: "/watchlist", icon: Bookmark },
+    { label: "Insights", href: "/insights", icon: BarChart2 },
     { label: "Messages", href: "/messages", icon: MessageSquare },
     { label: "Profile", href: profilePath, icon: User },
     { label: "Settings", href: "/settings", icon: Settings },

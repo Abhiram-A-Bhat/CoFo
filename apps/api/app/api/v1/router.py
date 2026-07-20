@@ -10,6 +10,7 @@ from app.api.v1.pitch_feed import router as pitch_feed_router
 from app.api.v1.profile_verifications import router as profile_verifications_router
 from app.api.v1.startup_discovery import router as startup_discovery_router
 from app.api.v1.startup_profiles import router as startup_profiles_router
+from app.api.v1.retention import router as retention_router
 
 api_router = APIRouter()
 api_router.include_router(admin_router)
@@ -22,3 +23,4 @@ api_router.include_router(pitch_feed_router)
 api_router.include_router(profile_verifications_router)
 api_router.include_router(startup_discovery_router)
 api_router.include_router(startup_profiles_router)
+api_router.include_router(retention_router)

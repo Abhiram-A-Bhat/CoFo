@@ -1,6 +1,6 @@
 "use client";
 
-import { Search, Heart, Send, Bookmark, Volume2, VolumeX, ChevronDown, ChevronUp, TrendingUp } from "lucide-react";
+import { Search, Heart, Send, Bookmark, Volume2, VolumeX, ChevronDown, ChevronUp, TrendingUp, MessageSquare, Loader2 } from "lucide-react";
 import { FormEvent, useEffect, useState, useRef } from "react";
 import Link from "next/link";
 
@@ -16,6 +16,8 @@ import { env } from "@/lib/config/env";
 import { getMe, type AuthUser } from "@/lib/api/auth";
 import { getMyInvestorProfile, type InvestorProfile } from "@/lib/api/investor-profile";
 import { calculateMatchScore } from "@/lib/matching-algorithm";
+import { getPitchComments, addPitchComment, toggleWatchlist, type PitchComment } from "@/lib/api/retention";
+import { useToast } from "@/lib/toast-context";
 
 const PAGE_SIZE = 20;
 
@@ -198,12 +200,60 @@ function PitchCardSkeleton() {
 }
 
 function PitchCard({ startup }: { startup: ScoredStartupDiscoveryItem }) {
+  const toast = useToast();
   const [liked, setLiked] = useState(false);
   const [saved, setSaved] = useState(false);
   // Financial metrics open by default
   const [showMetrics, setShowMetrics] = useState(true);
+  const [showComments, setShowComments] = useState(false);
+  const [comments, setComments] = useState<PitchComment[]>([]);
+  const [commentInput, setCommentInput] = useState("");
+  const [loadingComments, setLoadingComments] = useState(false);
+  const [postingComment, setPostingComment] = useState(false);
   const [muted, setMuted] = useState(false);
   const videoRef = useRef<HTMLVideoElement>(null);
+
+  const handleToggleWatchlist = async () => {
+    try {
+      const res = await toggleWatchlist("startup", startup.id);
+      setSaved(res.saved);
+      if (res.saved) {
+        toast.success(`Saved ${startup.startup_name} to your Watchlist`);
+      } else {
+        toast.info(`Removed ${startup.startup_name} from Watchlist`);
+      }
+    } catch (_) {
+      setSaved(!saved);
+    }
+  };
+
+  const handleLoadComments = async () => {
+    if (!showComments && comments.length === 0) {
+      setLoadingComments(true);
+      try {
+        const res = await getPitchComments(startup.id);
+        setComments(res.items);
+      } catch (_) {}
+      setLoadingComments(false);
+    }
+    setShowComments(!showComments);
+  };
+
+  const handlePostComment = async (e: FormEvent) => {
+    e.preventDefault();
+    if (!commentInput.trim()) return;
+    setPostingComment(true);
+    try {
+      const newComment = await addPitchComment(startup.id, commentInput.trim());
+      setComments((prev) => [...prev, newComment]);
+      setCommentInput("");
+      toast.success("Comment posted!");
+    } catch (err) {
+      toast.error(getApiErrorMessage(err, "Could not post comment"));
+    } finally {
+      setPostingComment(false);
+    }
+  };
 
   const toggleMute = () => {
     if (videoRef.current) {
@@ -351,6 +401,14 @@ function PitchCard({ startup }: { startup: ScoredStartupDiscoveryItem }) {
           >
             <Heart className="h-5 w-5" fill={liked ? "currentColor" : "none"} />
           </button>
+          <button
+            onClick={handleLoadComments}
+            className={`flex items-center gap-1 text-[13px] font-medium transition-colors ${showComments ? "text-emerald-400" : "text-white/60 hover:text-white"}`}
+            title="Comments and Feedback"
+          >
+            <MessageSquare className="h-5 w-5" />
+            {comments.length > 0 && <span className="text-xs">{comments.length}</span>}
+          </button>
           <Link
             href="/messages"
             className="text-white/60 hover:text-emerald-400 transition-colors"
@@ -360,7 +418,7 @@ function PitchCard({ startup }: { startup: ScoredStartupDiscoveryItem }) {
           </Link>
         </div>
         <button
-          onClick={() => setSaved(!saved)}
+          onClick={handleToggleWatchlist}
           className={`transition-all active:scale-125 ${saved ? "text-emerald-400 drop-shadow-[0_0_8px_rgba(16,185,129,0.4)]" : "text-white/60 hover:text-emerald-400"}`}
         >
           <Bookmark className="h-5 w-5" fill={saved ? "currentColor" : "none"} />
@@ -429,6 +487,55 @@ function PitchCard({ startup }: { startup: ScoredStartupDiscoveryItem }) {
             </div>
           </div>
         </div>
+
+        {/* ── COMMENTS DRAWER SECTION ── */}
+        {showComments && (
+          <div className="border-t border-white/[0.06] pt-4 space-y-4">
+            <h4 className="text-xs font-bold uppercase tracking-wider text-white/50">
+              Comments &amp; Investor Questions ({comments.length})
+            </h4>
+
+            {/* Post comment form */}
+            <form onSubmit={handlePostComment} className="flex gap-2">
+              <Input
+                value={commentInput}
+                onChange={(e) => setCommentInput(e.target.value)}
+                placeholder="Ask a question or leave feedback..."
+                className="bg-white/[0.04] border-white/10 text-white text-xs h-9 focus-visible:ring-emerald-500/40"
+              />
+              <Button
+                type="submit"
+                disabled={postingComment || !commentInput.trim()}
+                className="bg-emerald-500 hover:bg-emerald-400 text-black font-semibold text-xs h-9 px-4 shrink-0"
+              >
+                {postingComment ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : "Post"}
+              </Button>
+            </form>
+
+            {/* Comments list */}
+            {loadingComments ? (
+              <div className="flex justify-center py-4">
+                <Loader2 className="h-4 w-4 animate-spin text-emerald-400" />
+              </div>
+            ) : comments.length > 0 ? (
+              <div className="space-y-2.5 max-h-60 overflow-y-auto pr-1">
+                {comments.map((c) => (
+                  <div key={c.id} className="rounded-xl border border-white/[0.06] bg-white/[0.02] p-3 text-xs space-y-1">
+                    <div className="flex items-center justify-between text-white/40">
+                      <span className="font-semibold text-white capitalize">{c.user_name} <span className="text-[10px] text-emerald-400 font-normal">({c.user_role})</span></span>
+                      <span className="text-[10px]">{new Date(c.created_at).toLocaleDateString()}</span>
+                    </div>
+                    <p className="text-white/80 leading-relaxed">{c.content}</p>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <p className="text-xs text-white/30 text-center py-3">
+                No comments yet. Be the first investor to ask a question!
+              </p>
+            )}
+          </div>
+        )}
       </div>
     </article>
   );

@@ -7,6 +7,12 @@ from app.models.startup_profile import StartupProfile
 from app.models.user import User
 from app.models.announcement import Announcement
 from app.models.system_setting import SystemSetting
+from app.models.pitch_comment import PitchComment
+from app.models.pipeline_item import PipelineItem
+from app.models.investor_update import InvestorUpdate
+from app.models.watchlist_item import WatchlistItem
+from app.models.notification import Notification
+from app.models.endorsement import Endorsement
 
 __all__ = [
     "InvestorProfile",
@@ -18,4 +24,10 @@ __all__ = [
     "User",
     "Announcement",
     "SystemSetting",
+    "PitchComment",
+    "PipelineItem",
+    "InvestorUpdate",
+    "WatchlistItem",
+    "Notification",
+    "Endorsement",
 ]
