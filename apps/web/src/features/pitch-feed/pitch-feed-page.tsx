@@ -1,6 +1,21 @@
 "use client";
 
-import { Search, Heart, Send, Bookmark, Volume2, VolumeX, ChevronDown, ChevronUp, TrendingUp, MessageSquare, Loader2 } from "lucide-react";
+import { 
+  Search, 
+  Heart, 
+  Send, 
+  Bookmark, 
+  Volume2, 
+  VolumeX, 
+  ChevronDown, 
+  ChevronUp, 
+  TrendingUp, 
+  MessageSquare, 
+  Loader2,
+  X,
+  Sparkles,
+  Info
+} from "lucide-react";
 import { FormEvent, useEffect, useState, useRef } from "react";
 import Link from "next/link";
 
@@ -32,19 +47,18 @@ export function PitchFeedPage() {
   const [items, setItems] = useState<ScoredStartupDiscoveryItem[]>([]);
   const [error, setError] = useState("");
   const [isLoading, setIsLoading] = useState(true);
+  const [activeIndex, setActiveIndex] = useState(0);
 
   async function loadFeed() {
     setIsLoading(true);
     setError("");
 
     try {
-      // 1. Fetch Auth details
       let userObj: AuthUser | null = null;
       try {
         userObj = await getMe();
       } catch (_e) {}
 
-      // 2. Fetch Investor details if investor
       let invProfile: InvestorProfile | null = null;
       if (userObj && (userObj.role === "investor" || localStorage.getItem("fundflow_active_workspace") === "investor")) {
         try {
@@ -52,7 +66,6 @@ export function PitchFeedPage() {
         } catch (_e) {}
       }
 
-      // 3. Fetch Feed items
       const response = await getPitchFeed({
         limit: PAGE_SIZE,
         offset: 0,
@@ -60,20 +73,16 @@ export function PitchFeedPage() {
         industry: industry.trim() || undefined
       });
 
-      // 4. Score and Sort items using the algorithm if user is logged in
       let scoredItems: ScoredStartupDiscoveryItem[] = [...response.items];
       if (userObj) {
         scoredItems = scoredItems.map(item => {
           const match = calculateMatchScore(item, userObj, invProfile);
           return {
             ...item,
-            // Attach transient match data
             matchScore: match.score,
             matchReasons: match.reasons
           };
         });
-        
-        // Sort items by score descending
         scoredItems.sort((a, b) => (b.matchScore || 0) - (a.matchScore || 0));
       }
 
@@ -95,57 +104,58 @@ export function PitchFeedPage() {
   }
 
   return (
-    <div className="space-y-6">
-      {/* Header */}
-      <div className="flex flex-col gap-4 border-b border-white/[0.08] pb-6">
-        <div>
-          <span className="text-xs font-bold uppercase tracking-widest text-emerald-400">
-            BridgeCapita Shorts
-          </span>
-          <h1 className="text-3xl font-bold tracking-tight text-white mt-1">Pitch Feed</h1>
-        </div>
-
-        <form className="grid gap-3 sm:grid-cols-[2fr_1fr_auto]" onSubmit={onSubmit}>
-          <div className="relative">
-            <Search className="absolute left-3 top-3 h-4 w-4 text-white/30" />
+    <div className="flex flex-col items-center justify-center min-h-[calc(100vh-56px)] md:min-h-screen py-2 sm:py-4">
+      {/* Search Header Bar (Floating Compact) */}
+      <div className="w-full max-w-[420px] mb-3 px-2">
+        <form className="flex gap-2" onSubmit={onSubmit}>
+          <div className="relative flex-1">
+            <Search className="absolute left-3 top-2.5 h-3.5 w-3.5 text-white/30" />
             <Input
-              className="pl-9 bg-white/[0.04] border-white/10 text-white placeholder:text-white/30 focus-visible:ring-emerald-500/40 focus-visible:border-emerald-500/40 h-10"
+              className="pl-8 bg-white/[0.06] border-white/10 text-white placeholder:text-white/30 text-xs h-9 focus-visible:ring-emerald-500/40 rounded-xl"
               id="query"
               onChange={(event) => setQuery(event.target.value)}
-              placeholder="Search startups, traction, keywords..."
+              placeholder="Search pitches &amp; startups..."
               value={query}
             />
           </div>
-          <Input
-            className="bg-white/[0.04] border-white/10 text-white placeholder:text-white/30 focus-visible:ring-emerald-500/40 focus-visible:border-emerald-500/40 h-10"
-            id="industry"
-            onChange={(event) => setIndustry(event.target.value)}
-            placeholder="Domain (e.g., AI, SaaS)"
-            value={industry}
-          />
           <Button
-            className="bg-emerald-500 hover:bg-emerald-400 text-black font-semibold h-10 px-6 transition-all"
+            className="bg-emerald-500 hover:bg-emerald-400 text-black font-semibold text-xs h-9 px-4 rounded-xl transition-all"
             disabled={isLoading}
             type="submit"
           >
-            Search
+            Find
           </Button>
         </form>
       </div>
 
-      {/* Pitch Feed */}
-      <div className="space-y-8 w-full max-w-5xl mx-auto">
-        {error ? <Alert>{error}</Alert> : null}
-
-        {items.length > 0 ? (
-          items.map((startup) => (
-            <PitchCard key={startup.id} startup={startup} />
-          ))
+      {/* Fullscreen Vertical Reel Container */}
+      <div className="relative w-full max-w-[420px] h-[calc(100vh-140px)] min-h-[580px] max-h-[780px] bg-black rounded-3xl border border-white/15 overflow-hidden shadow-2xl">
+        {error ? (
+          <div className="p-4"><Alert>{error}</Alert></div>
         ) : isLoading ? (
-          [1, 2, 3].map((i) => <PitchCardSkeleton key={i} />)
+          <div className="flex flex-col items-center justify-center h-full gap-3 text-white/40">
+            <Loader2 className="h-8 w-8 animate-spin text-emerald-400" />
+            <span className="text-xs font-medium">Loading Pitch Reels...</span>
+          </div>
+        ) : items.length > 0 ? (
+          <div 
+            className="h-full w-full overflow-y-scroll snap-y snap-mandatory scrollbar-none"
+            onScroll={(e) => {
+              const el = e.currentTarget;
+              const index = Math.round(el.scrollTop / el.clientHeight);
+              if (index !== activeIndex && index >= 0 && index < items.length) {
+                setActiveIndex(index);
+              }
+            }}
+          >
+            {items.map((startup, idx) => (
+              <ReelItem key={startup.id} startup={startup} isActive={idx === activeIndex} />
+            ))}
+          </div>
         ) : (
-          <div className="flex flex-col items-center justify-center py-16 gap-2 text-sm text-white/30">
-            No pitches found.
+          <div className="flex flex-col items-center justify-center h-full p-8 text-center gap-3">
+            <Sparkles className="h-8 w-8 text-emerald-400" />
+            <p className="text-xs text-white/40">No pitch reels found matching your query.</p>
           </div>
         )}
       </div>
@@ -153,74 +163,81 @@ export function PitchFeedPage() {
   );
 }
 
-function PitchCardSkeleton() {
-  return (
-    <div className="rounded-2xl border border-white/[0.08] bg-[#0d0d0d] overflow-hidden animate-shimmer">
-      {/* Header */}
-      <div className="flex items-center justify-between px-4 py-3 border-b border-white/[0.06]">
-        <div className="flex items-center gap-3">
-          <div className="h-9 w-9 rounded-full bg-white/[0.07] animate-pulse" />
-          <div className="space-y-1.5">
-            <div className="h-3.5 w-28 rounded-md bg-white/[0.07] animate-pulse" />
-            <div className="h-2.5 w-20 rounded-md bg-white/[0.04] animate-pulse" />
-          </div>
-        </div>
-        <div className="h-5 w-14 rounded-full bg-emerald-500/10 animate-pulse" />
-      </div>
-
-      {/* Media */}
-      <div className="h-[300px] w-full bg-neutral-900" />
-
-      {/* Actions */}
-      <div className="flex items-center justify-between px-4 py-3">
-        <div className="flex gap-4">
-          <div className="h-5 w-5 rounded bg-white/[0.06] animate-pulse" />
-          <div className="h-5 w-5 rounded bg-white/[0.06] animate-pulse" />
-        </div>
-        <div className="h-5 w-5 rounded bg-white/[0.06] animate-pulse" />
-      </div>
-
-      {/* Body */}
-      <div className="px-4 pb-5 space-y-3">
-        <div className="h-3.5 w-full rounded bg-white/[0.05] animate-pulse" />
-        <div className="h-3.5 w-4/5 rounded bg-white/[0.04] animate-pulse" />
-
-        {/* Metrics grid */}
-        <div className="border-t border-white/[0.06] pt-4 grid grid-cols-2 gap-2">
-          {[1, 2, 3, 4].map((i) => (
-            <div key={i} className="bg-white/[0.03] border border-white/[0.06] rounded-xl p-3 space-y-2">
-              <div className="h-2.5 w-16 rounded bg-white/[0.05] animate-pulse" />
-              <div className="h-3.5 w-20 rounded bg-white/[0.07] animate-pulse" />
-            </div>
-          ))}
-        </div>
-      </div>
-    </div>
-  );
-}
-
-function PitchCard({ startup }: { startup: ScoredStartupDiscoveryItem }) {
+/* ─────────────────────────────────────────────────────────────
+ * REEL ITEM (INSTAGRAM SHORTS STYLE VERTICAL PLAYER)
+ * ───────────────────────────────────────────────────────────── */
+function ReelItem({ startup, isActive }: { startup: ScoredStartupDiscoveryItem; isActive: boolean }) {
   const toast = useToast();
+  const videoRef = useRef<HTMLVideoElement>(null);
+  
   const [liked, setLiked] = useState(false);
+  const [likeCount, setLikeCount] = useState(12);
   const [saved, setSaved] = useState(false);
-  // Financial metrics open by default
-  const [showMetrics, setShowMetrics] = useState(true);
+  const [muted, setMuted] = useState(false);
+  const [isPlaying, setIsPlaying] = useState(true);
+  
   const [showComments, setShowComments] = useState(false);
   const [comments, setComments] = useState<PitchComment[]>([]);
   const [commentInput, setCommentInput] = useState("");
   const [loadingComments, setLoadingComments] = useState(false);
   const [postingComment, setPostingComment] = useState(false);
-  const [muted, setMuted] = useState(false);
-  const videoRef = useRef<HTMLVideoElement>(null);
+
+  const [showMetrics, setShowMetrics] = useState(false);
+  const [expandDesc, setExpandDesc] = useState(false);
+
+  // Play/pause based on scroll active status
+  useEffect(() => {
+    if (videoRef.current) {
+      if (isActive) {
+        videoRef.current.currentTime = 0;
+        const p = videoRef.current.play();
+        if (p !== undefined) {
+          p.then(() => setIsPlaying(true)).catch(() => {
+            if (videoRef.current) {
+              videoRef.current.muted = true;
+              setMuted(true);
+              videoRef.current.play().then(() => setIsPlaying(true)).catch(() => setIsPlaying(false));
+            }
+          });
+        }
+      } else {
+        videoRef.current.pause();
+        setIsPlaying(false);
+      }
+    }
+  }, [isActive]);
+
+  const togglePlay = () => {
+    if (videoRef.current) {
+      if (videoRef.current.paused) {
+        videoRef.current.play().then(() => setIsPlaying(true)).catch(() => {});
+      } else {
+        videoRef.current.pause();
+        setIsPlaying(false);
+      }
+    }
+  };
+
+  const toggleMute = () => {
+    if (videoRef.current) {
+      videoRef.current.muted = !videoRef.current.muted;
+      setMuted(videoRef.current.muted);
+    }
+  };
+
+  const handleLike = () => {
+    setLiked(!liked);
+    setLikeCount((prev) => (liked ? prev - 1 : prev + 1));
+  };
 
   const handleToggleWatchlist = async () => {
     try {
       const res = await toggleWatchlist("startup", startup.id);
       setSaved(res.saved);
       if (res.saved) {
-        toast.success(`Saved ${startup.startup_name} to your Watchlist`);
+        toast.success(`Saved ${startup.startup_name} to Watchlist`);
       } else {
-        toast.info(`Removed ${startup.startup_name} from Watchlist`);
+        toast.info(`Removed from Watchlist`);
       }
     } catch (_) {
       setSaved(!saved);
@@ -255,316 +272,225 @@ function PitchCard({ startup }: { startup: ScoredStartupDiscoveryItem }) {
     }
   };
 
-  const toggleMute = () => {
-    if (videoRef.current) {
-      videoRef.current.muted = !videoRef.current.muted;
-      setMuted(videoRef.current.muted);
-    }
-  };
-
-  // Programmatically force play on mount. Try unmuted, fallback to muted if browser blocks.
-  useEffect(() => {
-    if (videoRef.current) {
-      videoRef.current.muted = false;
-      const playPromise = videoRef.current.play();
-      if (playPromise !== undefined) {
-        playPromise.catch(() => {
-          // Browser blocked unmuted autoplay, fallback to muted autoplay
-          if (videoRef.current) {
-            videoRef.current.muted = true;
-            setMuted(true);
-            videoRef.current.play().catch((err) => {
-              console.log("Muted autoplay also blocked:", err);
-            });
-          }
-        });
-      }
-    }
-  }, []);
-
   return (
-    <article className="rounded-2xl border border-white/[0.08] bg-[#0d0d0d] overflow-hidden shadow-xl transition-all hover:border-white/[0.14]">
-      {/* Card Header */}
-      <div className="flex items-center justify-between px-4 py-3 border-b border-white/[0.06]">
-        <div className="flex items-center gap-3">
-          <div className="flex h-9 w-9 items-center justify-center rounded-full bg-emerald-500/10 border border-emerald-500/20 font-bold text-emerald-400 text-xs">
+    <div className="relative h-full w-full snap-start snap-always bg-black overflow-hidden flex items-center justify-center select-none">
+      {/* Video Stream or Poster Fallback */}
+      {startup.pitch_video_url ? (
+        <video
+          ref={videoRef}
+          className="h-full w-full object-cover cursor-pointer"
+          loop
+          playsInline
+          muted={muted}
+          src={absoluteMediaUrl(startup.pitch_video_url)}
+          onClick={togglePlay}
+          onDoubleClick={handleLike}
+        />
+      ) : (
+        <div className="flex flex-col items-center justify-center h-full w-full bg-gradient-to-b from-emerald-950/40 via-[#0a0a0a] to-black p-8 text-center space-y-3">
+          <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 font-black text-2xl">
             {startup.startup_name.slice(0, 2).toUpperCase()}
           </div>
-          <div>
-            <div className="flex items-center gap-1.5">
-              <h3 className="text-sm font-semibold text-white">{startup.startup_name}</h3>
-              <VerificationBadges badges={startup.verification_badges} />
-            </div>
-            <span className="text-[11px] text-white/35">
-              {startup.industry} / {startup.headquarters || "Global"}
-            </span>
-          </div>
+          <h2 className="text-2xl font-bold text-white tracking-tight">{startup.startup_name}</h2>
+          <Badge variant="outline" className="border-emerald-500/30 text-emerald-400 text-xs">
+            {startup.stage || "Early Stage"} · {startup.industry}
+          </Badge>
+          <p className="text-xs text-white/40 max-w-xs leading-relaxed">
+            Tap metrics button on the right to view financial snapshot &amp; traction data.
+          </p>
         </div>
+      )}
+
+      {/* Top Header Control Overlay */}
+      <div className="absolute top-0 left-0 right-0 p-4 bg-gradient-to-b from-black/80 via-black/30 to-transparent flex items-center justify-between z-10">
         <div className="flex items-center gap-2">
-          {startup.matchScore !== undefined && (
-            <div 
-              title={(startup.matchReasons || []).join("\n")}
-              className="bg-emerald-500 text-black text-[10px] font-bold px-2 py-0.5 rounded-md shadow-[0_0_10px_rgba(16,185,129,0.3)] cursor-help"
-            >
-              {startup.matchScore}% Match
-            </div>
-          )}
-          {startup.stage && (
-            <Badge className="bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 hover:bg-emerald-500/15 text-[10px] font-medium animate-pulse">
-              {startup.stage}
-            </Badge>
-          )}
-        </div>
-      </div>
-
-      {/* Media & Dynamic Video Window */}
-      <div className="relative w-full max-h-[580px] bg-neutral-950 flex items-center justify-center border-y border-white/[0.04] overflow-hidden">
-        {startup.pitch_video_url ? (
-          <>
-            <video
-              ref={videoRef}
-              className="w-full h-auto max-h-[520px] sm:max-h-[580px] object-contain cursor-pointer select-none"
-              loop
-              autoPlay
-              muted={muted}
-              playsInline
-              preload="auto"
-              src={absoluteMediaUrl(startup.pitch_video_url)}
-              onClick={(e) => {
-                const video = e.currentTarget;
-                if (video.paused) {
-                  video.play().catch((err) => console.log("Play failed:", err));
-                } else {
-                  video.pause();
-                }
-              }}
-              onDoubleClick={() => {
-                setLiked(true);
-                toast.success("Liked pitch!");
-              }}
-            />
-            {/* Professional control strip overlay (Bottom bar style, not floating Instagram circle) */}
-            <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/90 via-black/40 to-transparent p-4 flex items-center justify-between opacity-90 hover:opacity-100 transition-opacity duration-200">
-              <div className="flex items-center gap-2">
-                <span className="text-[11px] font-medium text-white/70 bg-black/40 backdrop-blur-md px-2.5 py-1 rounded-md border border-white/10 flex items-center gap-1.5">
-                  <span className="h-1.5 w-1.5 rounded-full bg-emerald-400 animate-pulse" />
-                  Short Pitch
-                </span>
-                <button
-                  onClick={() => {
-                    if (videoRef.current) {
-                      if (videoRef.current.paused) {
-                        videoRef.current.play().catch(() => {});
-                      } else {
-                        videoRef.current.pause();
-                      }
-                    }
-                  }}
-                  className="rounded-lg bg-white/5 hover:bg-white/15 border border-white/10 px-2.5 py-1 text-xs text-white transition-all"
-                >
-                  Play/Pause
-                </button>
-              </div>
-              <button
-                onClick={toggleMute}
-                className="flex items-center gap-2 rounded-lg bg-emerald-500/10 hover:bg-emerald-500/20 border border-emerald-500/30 px-3 py-1.5 text-xs text-emerald-400 font-medium transition-all"
-              >
-                {muted ? (
-                  <>
-                    <VolumeX className="h-3.5 w-3.5" />
-                    <span>Unmute Pitch</span>
-                  </>
-                ) : (
-                  <>
-                    <Volume2 className="h-3.5 w-3.5" />
-                    <span>Mute Pitch</span>
-                  </>
-                )}
-              </button>
-            </div>
-          </>
-        ) : (
-          <div className="flex h-full w-full flex-col items-center justify-center gap-4 bg-gradient-to-b from-emerald-950/20 to-[#0a0a0a] p-8 text-center">
-            <Badge variant="outline" className="border-emerald-500/30 text-emerald-400 bg-emerald-500/5">
-              Pitch deck summary
-            </Badge>
-            <h2 className="text-2xl font-bold text-white">{startup.startup_name}</h2>
-            <p className="text-xs text-white/35 max-w-xs leading-relaxed">
-              Founder has not uploaded a video yet. Explore their profile and metrics below.
-            </p>
-          </div>
-        )}
-      </div>
-
-      {/* Action Toolbar */}
-      <div className="flex items-center justify-between px-4 py-2 sm:py-3">
-        <div className="flex items-center gap-2 sm:gap-4">
-          <button
-            onClick={() => setLiked(!liked)}
-            className={`p-2.5 rounded-xl transition-all active:scale-125 min-h-[44px] min-w-[44px] flex items-center justify-center ${liked ? "text-red-500 bg-red-500/10 drop-shadow-[0_0_8px_rgba(239,68,68,0.5)]" : "text-white/60 hover:text-red-400 hover:bg-white/[0.04]"}`}
-            title="Like pitch"
-          >
-            <Heart className="h-5 w-5" fill={liked ? "currentColor" : "none"} />
-          </button>
-          <button
-            onClick={handleLoadComments}
-            className={`p-2.5 rounded-xl flex items-center gap-1.5 text-[13px] font-medium transition-all min-h-[44px] min-w-[44px] justify-center ${showComments ? "text-emerald-400 bg-emerald-500/10" : "text-white/60 hover:text-white hover:bg-white/[0.04]"}`}
-            title="Comments and Feedback"
-          >
-            <MessageSquare className="h-5 w-5" />
-            {comments.length > 0 && <span className="text-xs">{comments.length}</span>}
-          </button>
-          <Link
-            href="/messages"
-            className="p-2.5 rounded-xl text-white/60 hover:text-emerald-400 hover:bg-white/[0.04] transition-all min-h-[44px] min-w-[44px] flex items-center justify-center"
-            title="Message this founder"
-          >
-            <Send className="h-5 w-5" />
-          </Link>
+          <span className="flex h-2 w-2 rounded-full bg-emerald-400 animate-pulse" />
+          <span className="text-[11px] font-bold uppercase tracking-widest text-white/80">Pitch Reel</span>
         </div>
         <button
-          onClick={handleToggleWatchlist}
-          className={`p-2.5 rounded-xl transition-all active:scale-125 min-h-[44px] min-w-[44px] flex items-center justify-center ${saved ? "text-emerald-400 bg-emerald-500/10 drop-shadow-[0_0_8px_rgba(16,185,129,0.4)]" : "text-white/60 hover:text-emerald-400 hover:bg-white/[0.04]"}`}
-          title="Save to Watchlist"
+          onClick={toggleMute}
+          className="p-2 rounded-full bg-black/40 backdrop-blur-md border border-white/10 text-white/80 hover:text-white"
         >
-          <Bookmark className="h-5 w-5" fill={saved ? "currentColor" : "none"} />
+          {muted ? <VolumeX className="h-4 w-4" /> : <Volume2 className="h-4 w-4" />}
         </button>
       </div>
 
-      {/* Description & Metrics */}
-      <div className="px-4 pb-5 space-y-4">
-        <p className="text-sm text-white/80 leading-relaxed">
-          <span className="font-semibold text-white mr-2">{startup.startup_name}</span>
+      {/* Right Floating Action Icons Bar (Instagram Reels Style) */}
+      <div className="absolute right-3 bottom-20 z-20 flex flex-col items-center gap-4">
+        {/* Match Score Badge */}
+        {startup.matchScore !== undefined && (
+          <div className="flex flex-col items-center gap-0.5">
+            <div className="flex h-11 w-11 items-center justify-center rounded-full bg-emerald-500 text-black font-extrabold text-xs shadow-[0_0_16px_rgba(16,185,129,0.5)]">
+              {startup.matchScore}%
+            </div>
+            <span className="text-[9px] font-bold uppercase text-white/60">Match</span>
+          </div>
+        )}
+
+        {/* Like */}
+        <button onClick={handleLike} className="flex flex-col items-center gap-1 group">
+          <div className={`flex h-11 w-11 items-center justify-center rounded-full bg-black/40 backdrop-blur-md border transition-all active:scale-125 ${liked ? "border-red-500/40 text-red-500 bg-red-500/10 shadow-[0_0_12px_rgba(239,68,68,0.4)]" : "border-white/10 text-white/80 group-hover:text-white"}`}>
+            <Heart className="h-5 w-5" fill={liked ? "currentColor" : "none"} />
+          </div>
+          <span className="text-[10px] font-semibold text-white/70">{likeCount}</span>
+        </button>
+
+        {/* Comments */}
+        <button onClick={handleLoadComments} className="flex flex-col items-center gap-1 group">
+          <div className={`flex h-11 w-11 items-center justify-center rounded-full bg-black/40 backdrop-blur-md border transition-all ${showComments ? "border-emerald-500/40 text-emerald-400 bg-emerald-500/10" : "border-white/10 text-white/80 group-hover:text-white"}`}>
+            <MessageSquare className="h-5 w-5" />
+          </div>
+          <span className="text-[10px] font-semibold text-white/70">{comments.length}</span>
+        </button>
+
+        {/* Watchlist */}
+        <button onClick={handleToggleWatchlist} className="flex flex-col items-center gap-1 group">
+          <div className={`flex h-11 w-11 items-center justify-center rounded-full bg-black/40 backdrop-blur-md border transition-all active:scale-125 ${saved ? "border-emerald-500/40 text-emerald-400 bg-emerald-500/10" : "border-white/10 text-white/80 group-hover:text-white"}`}>
+            <Bookmark className="h-5 w-5" fill={saved ? "currentColor" : "none"} />
+          </div>
+          <span className="text-[10px] font-semibold text-white/70">Save</span>
+        </button>
+
+        {/* Financial Metrics Sheet Toggle */}
+        <button onClick={() => setShowMetrics(!showMetrics)} className="flex flex-col items-center gap-1 group">
+          <div className={`flex h-11 w-11 items-center justify-center rounded-full bg-black/40 backdrop-blur-md border transition-all ${showMetrics ? "border-sky-500/40 text-sky-400 bg-sky-500/10" : "border-white/10 text-white/80 group-hover:text-white"}`}>
+            <TrendingUp className="h-5 w-5" />
+          </div>
+          <span className="text-[10px] font-semibold text-white/70">Data</span>
+        </button>
+
+        {/* Direct Message */}
+        <Link href="/messages" className="flex flex-col items-center gap-1 group">
+          <div className="flex h-11 w-11 items-center justify-center rounded-full bg-black/40 backdrop-blur-md border border-white/10 text-white/80 group-hover:text-emerald-400 transition-all">
+            <Send className="h-5 w-5" />
+          </div>
+          <span className="text-[10px] font-semibold text-white/70">Chat</span>
+        </Link>
+      </div>
+
+      {/* Bottom Content Info Overlay */}
+      <div className="absolute bottom-0 left-0 right-14 p-4 pb-6 bg-gradient-to-t from-black/95 via-black/60 to-transparent z-10 space-y-2 pointer-events-auto">
+        <div className="flex items-center gap-2">
+          <div className="flex h-7 w-7 items-center justify-center rounded-full bg-emerald-500/20 border border-emerald-500/30 text-emerald-400 font-extrabold text-xs">
+            {startup.startup_name.slice(0, 2).toUpperCase()}
+          </div>
+          <h3 className="text-base font-bold text-white tracking-tight">{startup.startup_name}</h3>
+          <VerificationBadges badges={startup.verification_badges} />
+        </div>
+
+        <p className="text-xs text-white/80 leading-snug line-clamp-2">
           {startup.description}
         </p>
 
-        {/* Financial metrics expanded by default */}
-        <div className="border-t border-white/[0.06] pt-4">
-          <button
-            onClick={() => setShowMetrics(!showMetrics)}
-            className="flex items-center gap-2 text-xs font-semibold text-emerald-400 hover:text-emerald-300 transition-colors mb-3"
-          >
-            <TrendingUp className="h-3.5 w-3.5" />
-            {showMetrics ? (
-              <>Hide financial metrics <ChevronUp className="h-3.5 w-3.5" /></>
-            ) : (
-              <>View financial metrics &amp; traction <ChevronDown className="h-3.5 w-3.5" /></>
-            )}
-          </button>
+        <div className="flex flex-wrap items-center gap-2 text-[10px] text-white/50 pt-1">
+          <span className="bg-white/10 px-2 py-0.5 rounded-full text-white/80">{startup.industry}</span>
+          <span>Raise: {currency(startup.funding_required)}</span>
+          <span>Valuation: {currency(startup.valuation)}</span>
+        </div>
+      </div>
 
-          <div
-            className={`grid transition-all duration-500 ease-[cubic-bezier(0.4,0,0.2,1)] ${
-              showMetrics ? "grid-rows-[1fr] opacity-100" : "grid-rows-[0fr] opacity-0 pointer-events-none"
-            }`}
-          >
-            <div className="overflow-hidden">
-              <div className="space-y-3 pb-1">
-                {/* Key metrics grid */}
-                <div className="grid grid-cols-2 gap-2 text-xs">
-                  {[
-                    { label: "Funding Required", value: currency(startup.funding_required) },
-                    { label: "Valuation", value: currency(startup.valuation) },
-                    { label: "ARR", value: currency(startup.annual_recurring_revenue) },
-                    { label: "Runway", value: months(startup.runway_months) },
-                  ].map(({ label, value }) => (
-                    <div key={label} className="bg-white/[0.03] border border-white/[0.06] rounded-xl p-3">
-                      <span className="text-white/40 block text-[11px]">{label}</span>
-                      <span className="font-semibold text-white mt-1 block">{value}</span>
-                    </div>
-                  ))}
+      {/* Comments Slide-up Sheet */}
+      {showComments && (
+        <div className="absolute inset-x-0 bottom-0 top-1/3 z-30 bg-[#0d0d0d] border-t border-white/15 rounded-t-3xl p-4 flex flex-col justify-between shadow-2xl animate-in slide-in-from-bottom duration-300">
+          <div className="flex items-center justify-between border-b border-white/[0.06] pb-3">
+            <span className="text-xs font-bold text-white uppercase tracking-wider">Comments ({comments.length})</span>
+            <button onClick={() => setShowComments(false)} className="p-1 text-white/40 hover:text-white">
+              <X className="h-4 w-4" />
+            </button>
+          </div>
+
+          <div className="flex-1 overflow-y-auto space-y-2 py-3 pr-1">
+            {loadingComments ? (
+              <div className="flex justify-center py-6"><Loader2 className="h-5 w-5 animate-spin text-emerald-400" /></div>
+            ) : comments.length > 0 ? (
+              comments.map((c) => (
+                <div key={c.id} className="p-2.5 rounded-xl border border-white/[0.06] bg-white/[0.02] text-xs space-y-1">
+                  <div className="flex justify-between text-white/40 text-[10px]">
+                    <span className="font-semibold text-white capitalize">{c.user_name} ({c.user_role})</span>
+                    <span>{new Date(c.created_at).toLocaleDateString()}</span>
+                  </div>
+                  <p className="text-white/80">{c.content}</p>
                 </div>
+              ))
+            ) : (
+              <p className="text-xs text-white/30 text-center py-6">No comments yet. Ask the founder a question!</p>
+            )}
+          </div>
 
-                {/* Traction */}
-                {startup.traction_summary && (
-                  <div className="bg-white/[0.03] border border-white/[0.06] rounded-xl p-3 text-xs">
-                    <span className="text-emerald-400 font-semibold block mb-1.5">Traction</span>
-                    <p className="text-white/70 leading-relaxed">{startup.traction_summary}</p>
-                  </div>
-                )}
+          <form onSubmit={handlePostComment} className="flex gap-2 pt-2 border-t border-white/[0.06]">
+            <Input
+              value={commentInput}
+              onChange={(e) => setCommentInput(e.target.value)}
+              placeholder="Write a comment..."
+              className="bg-white/[0.06] border-white/10 text-white text-xs h-9"
+            />
+            <Button type="submit" disabled={postingComment} className="bg-emerald-500 hover:bg-emerald-400 text-black font-semibold text-xs h-9 px-4">
+              {postingComment ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : "Post"}
+            </Button>
+          </form>
+        </div>
+      )}
 
-                {/* Use of Funds */}
-                {startup.use_of_funds && (
-                  <div className="bg-white/[0.03] border border-white/[0.06] rounded-xl p-3 text-xs">
-                    <span className="text-emerald-400 font-semibold block mb-1.5">Use of Funds</span>
-                    <p className="text-white/70 leading-relaxed">{startup.use_of_funds}</p>
-                  </div>
-                )}
-              </div>
+      {/* Financial Metrics Slide-up Sheet */}
+      {showMetrics && (
+        <div className="absolute inset-x-0 bottom-0 top-1/4 z-30 bg-[#0d0d0d] border-t border-white/15 rounded-t-3xl p-5 space-y-4 shadow-2xl animate-in slide-in-from-bottom duration-300">
+          <div className="flex items-center justify-between border-b border-white/[0.06] pb-3">
+            <span className="text-xs font-bold text-emerald-400 uppercase tracking-wider flex items-center gap-1.5">
+              <TrendingUp className="h-4 w-4" /> Financial Diligence &amp; Traction
+            </span>
+            <button onClick={() => setShowMetrics(false)} className="p-1 text-white/40 hover:text-white">
+              <X className="h-4 w-4" />
+            </button>
+          </div>
+
+          <div className="grid grid-cols-2 gap-2 text-xs">
+            <div className="bg-white/[0.03] border border-white/[0.06] p-3 rounded-xl">
+              <span className="text-white/40 text-[10px] block">Funding Required</span>
+              <span className="font-bold text-white">{currency(startup.funding_required)}</span>
+            </div>
+            <div className="bg-white/[0.03] border border-white/[0.06] p-3 rounded-xl">
+              <span className="text-white/40 text-[10px] block">Valuation</span>
+              <span className="font-bold text-white">{currency(startup.valuation)}</span>
+            </div>
+            <div className="bg-white/[0.03] border border-white/[0.06] p-3 rounded-xl">
+              <span className="text-white/40 text-[10px] block">ARR</span>
+              <span className="font-bold text-white">{currency(startup.annual_recurring_revenue)}</span>
+            </div>
+            <div className="bg-white/[0.03] border border-white/[0.06] p-3 rounded-xl">
+              <span className="text-white/40 text-[10px] block">Runway</span>
+              <span className="font-bold text-white">{startup.runway_months ? `${startup.runway_months} mos` : "N/A"}</span>
             </div>
           </div>
+
+          {startup.traction_summary && (
+            <div className="bg-white/[0.03] border border-white/[0.06] p-3 rounded-xl text-xs space-y-1">
+              <span className="font-semibold text-emerald-400 block">Traction Summary</span>
+              <p className="text-white/70 text-[11px] leading-relaxed">{startup.traction_summary}</p>
+            </div>
+          )}
+
+          {startup.use_of_funds && (
+            <div className="bg-white/[0.03] border border-white/[0.06] p-3 rounded-xl text-xs space-y-1">
+              <span className="font-semibold text-emerald-400 block">Use of Funds</span>
+              <p className="text-white/70 text-[11px] leading-relaxed">{startup.use_of_funds}</p>
+            </div>
+          )}
         </div>
-
-        {/* ── COMMENTS DRAWER SECTION ── */}
-        {showComments && (
-          <div className="border-t border-white/[0.06] pt-4 space-y-4">
-            <h4 className="text-xs font-bold uppercase tracking-wider text-white/50">
-              Comments &amp; Investor Questions ({comments.length})
-            </h4>
-
-            {/* Post comment form */}
-            <form onSubmit={handlePostComment} className="flex gap-2">
-              <Input
-                value={commentInput}
-                onChange={(e) => setCommentInput(e.target.value)}
-                placeholder="Ask a question or leave feedback..."
-                className="bg-white/[0.04] border-white/10 text-white text-xs h-9 focus-visible:ring-emerald-500/40"
-              />
-              <Button
-                type="submit"
-                disabled={postingComment || !commentInput.trim()}
-                className="bg-emerald-500 hover:bg-emerald-400 text-black font-semibold text-xs h-9 px-4 shrink-0"
-              >
-                {postingComment ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : "Post"}
-              </Button>
-            </form>
-
-            {/* Comments list */}
-            {loadingComments ? (
-              <div className="flex justify-center py-4">
-                <Loader2 className="h-4 w-4 animate-spin text-emerald-400" />
-              </div>
-            ) : comments.length > 0 ? (
-              <div className="space-y-2.5 max-h-60 overflow-y-auto pr-1">
-                {comments.map((c) => (
-                  <div key={c.id} className="rounded-xl border border-white/[0.06] bg-white/[0.02] p-3 text-xs space-y-1">
-                    <div className="flex items-center justify-between text-white/40">
-                      <span className="font-semibold text-white capitalize">{c.user_name} <span className="text-[10px] text-emerald-400 font-normal">({c.user_role})</span></span>
-                      <span className="text-[10px]">{new Date(c.created_at).toLocaleDateString()}</span>
-                    </div>
-                    <p className="text-white/80 leading-relaxed">{c.content}</p>
-                  </div>
-                ))}
-              </div>
-            ) : (
-              <p className="text-xs text-white/30 text-center py-3">
-                No comments yet. Be the first investor to ask a question!
-              </p>
-            )}
-          </div>
-        )}
-      </div>
-    </article>
+      )}
+    </div>
   );
 }
 
 function absoluteMediaUrl(url: string) {
-  if (url.startsWith("http")) {
-    return url;
-  }
+  if (url.startsWith("http")) return url;
   return `${env.apiUrl}${url}`;
 }
 
 function currency(value: string | null) {
-  if (!value) {
-    return "Not provided";
-  }
+  if (!value) return "N/A";
   return new Intl.NumberFormat("en-IN", {
     style: "currency",
     currency: "INR",
     maximumFractionDigits: 0
   }).format(Number(value));
-}
-
-function months(value: number | null) {
-  return value === null ? "Not provided" : `${value} months`;
 }
