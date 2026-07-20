@@ -24,6 +24,7 @@ import { getApiErrorMessage } from "@/lib/api/errors";
 import { listConversations } from "@/lib/api/messaging";
 
 import { CommandPalette } from "@/components/command-palette";
+import { NotificationBell } from "@/components/notification-bell";
 
 export default function DashboardLayout({ children }: { children: ReactNode }) {
   const router = useRouter();
@@ -301,30 +302,26 @@ export default function DashboardLayout({ children }: { children: ReactNode }) {
       {/* Mobile Top Header */}
       <header className="fixed top-0 left-0 right-0 z-40 flex h-14 items-center justify-between border-b border-white/[0.06] bg-[#0a0a0a]/80 backdrop-blur-xl px-4 md:hidden">
         <Link href="/pitch-feed" className="flex items-center gap-2.5">
-          <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-white text-[#0a0a0a] font-black text-xs">
+          <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-white text-[#0a0a0a] font-black text-xs select-none">
             BC
           </div>
-          <span className="text-[14px] font-semibold text-white">BridgeCapita</span>
+          <span className="text-[14px] font-semibold text-white tracking-tight">BridgeCapita</span>
         </Link>
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-2">
           {/* Workspace toggle pill */}
           <button
             onClick={handleWorkspaceToggle}
-            className="flex h-7 items-center gap-1.5 rounded-full border border-white/10 bg-white/[0.04] px-2.5 text-[10px] font-semibold text-white/60 hover:text-white hover:border-white/20 transition-all"
+            className="flex h-7 items-center gap-1.5 rounded-full border border-emerald-500/30 bg-emerald-500/10 px-3 text-[11px] font-semibold text-emerald-400 hover:bg-emerald-500/20 transition-all"
           >
             <RefreshCw className="h-3 w-3" />
             <span className="capitalize">{workspace}</span>
           </button>
-          <Link href="/settings" className="text-white/60 hover:text-white p-1 rounded-lg hover:bg-white/[0.04] transition-colors">
-            <Settings className="h-4 w-4" />
+          
+          <NotificationBell />
+
+          <Link href="/settings" className="text-white/60 hover:text-white p-2 rounded-xl hover:bg-white/[0.04] transition-colors">
+            <Settings className="h-4.5 w-4.5" />
           </Link>
-          <button
-            onClick={handleLogout}
-            className="text-white/60 hover:text-red-400 p-1 rounded-lg hover:bg-white/[0.04] transition-colors"
-            title="Log out"
-          >
-            <LogOut className="h-4 w-4" />
-          </button>
         </div>
       </header>
 
@@ -340,7 +337,7 @@ export default function DashboardLayout({ children }: { children: ReactNode }) {
       </main>
 
       {/* Bottom Navigation Bar (Mobile) */}
-      <nav className="fixed bottom-0 left-0 right-0 z-40 flex h-16 border-t border-white/[0.06] bg-[#0a0a0a]/90 backdrop-blur-xl md:hidden items-center justify-around px-2">
+      <nav className="fixed bottom-0 left-0 right-0 z-40 flex h-16 border-t border-white/[0.08] bg-[#0a0a0a]/95 backdrop-blur-2xl md:hidden items-center justify-around px-1">
         {menuItems.slice(0, 5).map((item) => {
           const Icon = item.icon;
           const isActive = pathname === item.href;
@@ -349,21 +346,21 @@ export default function DashboardLayout({ children }: { children: ReactNode }) {
             <Link
               key={item.href}
               href={item.href}
-              className={`relative flex flex-col items-center justify-center flex-1 py-2 text-[10px] transition-all duration-200 ${
-                isActive ? "text-emerald-400 font-semibold" : "text-white/50 hover:text-white"
+              className={`relative flex flex-col items-center justify-center flex-1 py-1.5 text-[10px] transition-all duration-200 ${
+                isActive ? "text-emerald-400 font-bold" : "text-white/40 hover:text-white"
               }`}
             >
               <div className="relative">
-                <Icon className={`h-4 w-4 mb-1 ${isActive ? "scale-110 text-emerald-400" : ""}`} />
+                <Icon className={`h-5 w-5 mb-0.5 ${isActive ? "scale-110 text-emerald-400 drop-shadow-[0_0_8px_rgba(16,185,129,0.4)]" : ""}`} />
                 {isMessages && unreadCount > 0 && (
-                  <span className="absolute -top-1.5 -right-2 flex h-4 min-w-[16px] items-center justify-center rounded-full bg-emerald-500 px-1 text-[9px] font-bold text-white">
+                  <span className="absolute -top-1 -right-2 flex h-4 min-w-[16px] items-center justify-center rounded-full bg-emerald-500 px-1 text-[9px] font-bold text-white shadow-[0_0_8px_rgba(16,185,129,0.5)]">
                     {unreadCount > 9 ? "9+" : unreadCount}
                   </span>
                 )}
               </div>
-              <span className="truncate">{item.label}</span>
+              <span className="truncate tracking-tight">{item.label}</span>
               {isActive && (
-                <div className="absolute bottom-0 left-1/2 -translate-x-1/2 h-0.5 w-6 rounded-full bg-emerald-400" />
+                <div className="absolute bottom-0 left-1/2 -translate-x-1/2 h-0.5 w-7 rounded-full bg-emerald-400 shadow-[0_0_8px_rgba(16,185,129,0.6)]" />
               )}
             </Link>
           );

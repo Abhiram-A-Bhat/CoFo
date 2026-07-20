@@ -323,7 +323,7 @@ function PitchCard({ startup }: { startup: ScoredStartupDiscoveryItem }) {
           <>
             <video
               ref={videoRef}
-              className="w-full h-auto max-h-[580px] object-contain cursor-pointer"
+              className="w-full h-auto max-h-[520px] sm:max-h-[580px] object-contain cursor-pointer select-none"
               loop
               autoPlay
               muted={muted}
@@ -337,6 +337,10 @@ function PitchCard({ startup }: { startup: ScoredStartupDiscoveryItem }) {
                 } else {
                   video.pause();
                 }
+              }}
+              onDoubleClick={() => {
+                setLiked(true);
+                toast.success("Liked pitch!");
               }}
             />
             {/* Professional control strip overlay (Bottom bar style, not floating Instagram circle) */}
@@ -393,17 +397,18 @@ function PitchCard({ startup }: { startup: ScoredStartupDiscoveryItem }) {
       </div>
 
       {/* Action Toolbar */}
-      <div className="flex items-center justify-between px-4 py-3">
-        <div className="flex items-center gap-4">
+      <div className="flex items-center justify-between px-4 py-2 sm:py-3">
+        <div className="flex items-center gap-2 sm:gap-4">
           <button
             onClick={() => setLiked(!liked)}
-            className={`transition-all active:scale-125 ${liked ? "text-red-500 drop-shadow-[0_0_8px_rgba(239,68,68,0.5)]" : "text-white/60 hover:text-red-400"}`}
+            className={`p-2.5 rounded-xl transition-all active:scale-125 min-h-[44px] min-w-[44px] flex items-center justify-center ${liked ? "text-red-500 bg-red-500/10 drop-shadow-[0_0_8px_rgba(239,68,68,0.5)]" : "text-white/60 hover:text-red-400 hover:bg-white/[0.04]"}`}
+            title="Like pitch"
           >
             <Heart className="h-5 w-5" fill={liked ? "currentColor" : "none"} />
           </button>
           <button
             onClick={handleLoadComments}
-            className={`flex items-center gap-1 text-[13px] font-medium transition-colors ${showComments ? "text-emerald-400" : "text-white/60 hover:text-white"}`}
+            className={`p-2.5 rounded-xl flex items-center gap-1.5 text-[13px] font-medium transition-all min-h-[44px] min-w-[44px] justify-center ${showComments ? "text-emerald-400 bg-emerald-500/10" : "text-white/60 hover:text-white hover:bg-white/[0.04]"}`}
             title="Comments and Feedback"
           >
             <MessageSquare className="h-5 w-5" />
@@ -411,7 +416,7 @@ function PitchCard({ startup }: { startup: ScoredStartupDiscoveryItem }) {
           </button>
           <Link
             href="/messages"
-            className="text-white/60 hover:text-emerald-400 transition-colors"
+            className="p-2.5 rounded-xl text-white/60 hover:text-emerald-400 hover:bg-white/[0.04] transition-all min-h-[44px] min-w-[44px] flex items-center justify-center"
             title="Message this founder"
           >
             <Send className="h-5 w-5" />
@@ -419,7 +424,8 @@ function PitchCard({ startup }: { startup: ScoredStartupDiscoveryItem }) {
         </div>
         <button
           onClick={handleToggleWatchlist}
-          className={`transition-all active:scale-125 ${saved ? "text-emerald-400 drop-shadow-[0_0_8px_rgba(16,185,129,0.4)]" : "text-white/60 hover:text-emerald-400"}`}
+          className={`p-2.5 rounded-xl transition-all active:scale-125 min-h-[44px] min-w-[44px] flex items-center justify-center ${saved ? "text-emerald-400 bg-emerald-500/10 drop-shadow-[0_0_8px_rgba(16,185,129,0.4)]" : "text-white/60 hover:text-emerald-400 hover:bg-white/[0.04]"}`}
+          title="Save to Watchlist"
         >
           <Bookmark className="h-5 w-5" fill={saved ? "currentColor" : "none"} />
         </button>

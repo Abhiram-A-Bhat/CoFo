@@ -1,6 +1,6 @@
 "use client";
 
-import { Loader2, MessageSquare, Plus, Send, MessagesSquare } from "lucide-react";
+import { Loader2, MessageSquare, Plus, Send, MessagesSquare, ArrowLeft } from "lucide-react";
 import { FormEvent, useEffect, useMemo, useRef, useState } from "react";
 
 import { Alert } from "@/components/ui/alert";
@@ -221,10 +221,11 @@ export function MessagingPage() {
   }
 
   return (
-    <main className="relative min-h-screen overflow-hidden bg-background px-4 py-8 sm:px-6 lg:px-8">
+    <main className="relative min-h-screen overflow-hidden bg-background px-4 py-6 sm:px-6 lg:px-8">
       <div className="absolute inset-x-0 top-0 h-80 bg-[linear-gradient(180deg,rgba(45,212,191,0.10),transparent_72%)]" />
       <div className="relative mx-auto grid max-w-7xl gap-6 lg:grid-cols-[360px_1fr]">
-        <Card className="border-white/15">
+        {/* Left panel: Conversations list (hidden on mobile if chat selected) */}
+        <Card className={`border-white/15 ${selectedConversationId ? "hidden lg:block" : "block"}`}>
           <CardHeader className="border-b border-white/10">
             <div className="flex items-center justify-between gap-3">
               <div>
@@ -318,14 +319,26 @@ export function MessagingPage() {
           </CardContent>
         </Card>
 
-        <Card className="flex min-h-[720px] flex-col border-white/15">
-          <CardHeader className="border-b border-white/10">
-            <CardTitle>
-              {selectedConversation
-                ? selectedConversation.participant_name ??
-                  selectedConversation.participant_email
-                : "Select a conversation"}
-            </CardTitle>
+        {/* Right panel: Active Chat view (hidden on mobile if no chat selected) */}
+        <Card className={`flex min-h-[600px] lg:min-h-[720px] flex-col border-white/15 ${!selectedConversationId ? "hidden lg:flex" : "flex"}`}>
+          <CardHeader className="border-b border-white/10 px-4 py-3 sm:px-6 sm:py-4">
+            <div className="flex items-center gap-3">
+              {selectedConversationId && (
+                <button
+                  onClick={() => setSelectedConversationId("")}
+                  className="p-2 rounded-xl text-white/60 hover:text-white hover:bg-white/[0.06] lg:hidden transition-colors"
+                  title="Back to conversations"
+                >
+                  <ArrowLeft className="h-5 w-5" />
+                </button>
+              )}
+              <CardTitle className="text-base sm:text-lg">
+                {selectedConversation
+                  ? selectedConversation.participant_name ??
+                    selectedConversation.participant_email
+                  : "Select a conversation"}
+              </CardTitle>
+            </div>
           </CardHeader>
           <CardContent className="flex flex-1 flex-col gap-4 p-5">
             {error ? <Alert>{error}</Alert> : null}
