@@ -15,7 +15,8 @@ import {
   X,
   Sparkles,
   Info,
-  Share2
+  Share2,
+  Trophy
 } from "lucide-react";
 import { FormEvent, useEffect, useState, useRef } from "react";
 import Link from "next/link";
@@ -32,7 +33,7 @@ import { env } from "@/lib/config/env";
 import { getMe, type AuthUser } from "@/lib/api/auth";
 import { getMyInvestorProfile, type InvestorProfile } from "@/lib/api/investor-profile";
 import { calculateMatchScore } from "@/lib/matching-algorithm";
-import { getPitchComments, addPitchComment, toggleWatchlist, type PitchComment } from "@/lib/api/retention";
+import { getPitchComments, addPitchComment, toggleWatchlist, makeVirtualInvestment, type PitchComment } from "@/lib/api/retention";
 import { useToast } from "@/lib/toast-context";
 import { ShareModal } from "@/components/share-modal";
 
@@ -247,6 +248,15 @@ function ReelItem({ startup, isActive }: { startup: ScoredStartupDiscoveryItem; 
     }
   };
 
+  const handleVirtualPredict = async () => {
+    try {
+      const res = await makeVirtualInvestment(startup.id, 100000);
+      toast.success(res.message);
+    } catch (err) {
+      toast.error(getApiErrorMessage(err, "Could not place prediction."));
+    }
+  };
+
   const handleLoadComments = async () => {
     if (!showComments && comments.length === 0) {
       setLoadingComments(true);
@@ -362,12 +372,12 @@ function ReelItem({ startup, isActive }: { startup: ScoredStartupDiscoveryItem; 
           <span className="text-[10px] font-semibold text-white/70">Data</span>
         </button>
 
-        {/* Share */}
-        <button onClick={() => setIsShareOpen(true)} className="flex flex-col items-center gap-1 group">
-          <div className="flex h-11 w-11 items-center justify-center rounded-full bg-black/40 backdrop-blur-md border border-white/10 text-white/80 group-hover:text-emerald-400 transition-all">
-            <Share2 className="h-5 w-5" />
+        {/* Virtual Angel Predict */}
+        <button onClick={handleVirtualPredict} className="flex flex-col items-center gap-1 group" title="Predict startup growth with ₹1 Lakh virtual credits">
+          <div className="flex h-11 w-11 items-center justify-center rounded-full bg-amber-500/20 backdrop-blur-md border border-amber-500/40 text-amber-400 group-hover:scale-110 shadow-[0_0_12px_rgba(245,158,11,0.3)] transition-all">
+            <Trophy className="h-5 w-5" />
           </div>
-          <span className="text-[10px] font-semibold text-white/70">Share</span>
+          <span className="text-[10px] font-bold text-amber-400">Predict</span>
         </button>
 
         {/* Direct Message */}

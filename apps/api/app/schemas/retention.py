@@ -140,3 +140,28 @@ class EcosystemInsightsResponse(BaseModel):
     avg_funding_required_inr: float
     top_industries: list[dict[str, int | str]]
     active_matches_count: int
+
+
+# ── Fantasy Angel Portfolio Game ──────────────────────────────────────
+class VirtualInvestmentCreate(BaseModel):
+    startup_profile_id: UUID
+    amount: float = Field(default=100000.0, gt=0)
+
+
+class VirtualInvestmentPublic(BaseModel):
+    id: UUID
+    startup_profile_id: UUID
+    startup_name: str
+    industry: str
+    amount: float
+    current_value: float
+    return_percent: float
+    created_at: datetime
+
+
+class FantasyPortfolioResponse(BaseModel):
+    available_credits: float
+    total_invested: float
+    current_portfolio_value: float
+    net_return_percent: float
+    investments: list[VirtualInvestmentPublic]

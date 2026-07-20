@@ -17,7 +17,8 @@ import {
   Bookmark,
   BarChart2,
   Bell,
-  Zap
+  Zap,
+  Trophy
 } from "lucide-react";
 
 import { getMe, logout, updateMyPreferences, type AuthUser } from "@/lib/api/auth";
@@ -215,6 +216,7 @@ export default function DashboardLayout({ children }: { children: ReactNode }) {
     { label: "Home", href: "/pitch-feed", icon: Home },
     { label: "Explore", href: explorePath, icon: Compass },
     { label: "Matches", href: "/matching", icon: Sparkles },
+    { label: "Predictor", href: "/portfolio", icon: Trophy },
     { label: "Pipeline", href: "/pipeline", icon: Kanban },
     { label: "Watchlist", href: "/watchlist", icon: Bookmark },
     { label: "Insights", href: "/insights", icon: BarChart2 },

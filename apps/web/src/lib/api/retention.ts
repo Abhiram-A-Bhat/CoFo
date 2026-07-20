@@ -166,3 +166,36 @@ export async function getEcosystemInsights() {
   const res = await apiClient.get<EcosystemInsights>("/insights");
   return res.data;
 }
+
+// ── Fantasy Angel Portfolio API ───────────────────────────────────────
+export interface VirtualInvestment {
+  id: string;
+  startup_profile_id: string;
+  startup_name: string;
+  industry: string;
+  amount: number;
+  current_value: number;
+  return_percent: number;
+  created_at: string;
+}
+
+export interface FantasyPortfolio {
+  available_credits: number;
+  total_invested: number;
+  current_portfolio_value: number;
+  net_return_percent: number;
+  investments: VirtualInvestment[];
+}
+
+export async function getFantasyPortfolio() {
+  const res = await apiClient.get<FantasyPortfolio>("/portfolio");
+  return res.data;
+}
+
+export async function makeVirtualInvestment(startupProfileId: string, amount = 100000) {
+  const res = await apiClient.post<{ message: string }>("/portfolio/invest", {
+    startup_profile_id: startupProfileId,
+    amount,
+  });
+  return res.data;
+}

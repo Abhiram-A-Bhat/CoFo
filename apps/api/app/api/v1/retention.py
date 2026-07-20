@@ -481,3 +481,95 @@ def get_ecosystem_insights(db: Session = Depends(get_db)):
         top_industries=top_industries,
         active_matches_count=total_startups * total_investors,
     )
+
+
+# ── FANTASY ANGEL PORTFOLIO ──────────────────────────────────────────
+@router.get("/portfolio", response_model=FantasyPortfolioResponse)
+def get_fantasy_portfolio(
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    from app.models.virtual_investment import VirtualInvestment
+    from app.schemas.retention import VirtualInvestmentPublic, FantasyPortfolioResponse
+
+    investments = db.execute(
+        select(VirtualInvestment).where(VirtualInvestment.user_id == current_user.id).order_by(VirtualInvestment.created_at.desc())
+    ).scalars().all()
+
+    INITIAL_CREDITS = 1000000.0  # ₹10,00,000 starting Virtual Portfolio
+    total_invested = sum(float(inv.amount) for inv in investments)
+    available_credits = max(0.0, INITIAL_CREDITS - total_invested)
+
+    portfolio_items = []
+    current_portfolio_value = 0.0
+
+    for inv in investments:
+        sp = db.execute(select(StartupProfile).where(StartupProfile.id == inv.startup_profile_id)).scalar_one_or_none()
+        name = sp.startup_name if sp else "Startup"
+        ind = sp.industry if sp else "General"
+
+        # Dynamically calculate growth multiplier based on comments/watchlist traction
+        comment_cnt = db.execute(select(func.count(PitchComment.id)).where(PitchComment.startup_profile_id == inv.startup_profile_id)).scalar() or 0
+        multiplier = 1.0 + (comment_cnt * 0.15)  # 15% gain per comment
+        current_val = float(inv.amount) * multiplier
+        current_portfolio_value += current_val
+        ret_pct = ((current_val - float(inv.amount)) / float(inv.amount)) * 100.0
+
+        portfolio_items.append(
+            VirtualInvestmentPublic(
+                id=inv.id,
+                startup_profile_id=inv.startup_profile_id,
+                startup_name=name,
+                industry=ind,
+                amount=float(inv.amount),
+                current_value=current_val,
+                return_percent=ret_pct,
+                created_at=inv.created_at,
+            )
+        )
+
+    overall_return = ((current_portfolio_value - total_invested) / total_invested * 100.0) if total_invested > 0 else 0.0
+
+    return FantasyPortfolioResponse(
+        available_credits=available_credits,
+        total_invested=total_invested,
+        current_portfolio_value=current_portfolio_value,
+        net_return_percent=overall_return,
+        investments=portfolio_items,
+    )
+
+
+@router.post("/portfolio/invest", status_code=status.HTTP_201_CREATED)
+def make_virtual_investment(
+    payload: VirtualInvestmentCreate,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    from app.models.virtual_investment import VirtualInvestment
+
+    sp = db.execute(select(StartupProfile).where(StartupProfile.id == payload.startup_profile_id)).scalar_one_or_none()
+    if not sp:
+        raise HTTPException(status_code=404, detail="Startup profile not found")
+
+    existing = db.execute(
+        select(VirtualInvestment).where(
+            VirtualInvestment.user_id == current_user.id,
+            VirtualInvestment.startup_profile_id == payload.startup_profile_id,
+        )
+    ).scalar_one_or_none()
+
+    if existing:
+        existing.amount = float(existing.amount) + payload.amount
+        db.commit()
+        db.refresh(existing)
+        return {"message": f"Added ₹{payload.amount:,.0f} virtual credits to {sp.startup_name}!"}
+    else:
+        new_inv = VirtualInvestment(
+            user_id=current_user.id,
+            startup_profile_id=payload.startup_profile_id,
+            amount=payload.amount,
+        )
+        db.add(new_inv)
+        db.commit()
+        return {"message": f"Invested ₹{payload.amount:,.0f} virtual credits in {sp.startup_name}!"}
+

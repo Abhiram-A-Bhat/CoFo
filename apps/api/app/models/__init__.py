@@ -13,6 +13,7 @@ from app.models.investor_update import InvestorUpdate
 from app.models.watchlist_item import WatchlistItem
 from app.models.notification import Notification
 from app.models.endorsement import Endorsement
+from app.models.virtual_investment import VirtualInvestment
 
 __all__ = [
     "InvestorProfile",
@@ -30,4 +31,5 @@ __all__ = [
     "WatchlistItem",
     "Notification",
     "Endorsement",
+    "VirtualInvestment",
 ]
