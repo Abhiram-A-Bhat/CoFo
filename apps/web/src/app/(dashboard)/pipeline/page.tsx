@@ -11,11 +11,13 @@ import {
   CheckCircle2, 
   ArrowRight,
   TrendingUp,
-  Briefcase
+  Briefcase,
+  Search
 } from "lucide-react";
 import Link from "next/link";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useToast } from "@/lib/toast-context";
@@ -33,6 +35,7 @@ const PIPELINE_STAGES: { id: PipelineItem["stage"]; label: string; color: string
 export default function PipelinePage() {
   const toast = useToast();
   const [items, setItems] = useState<PipelineItem[]>([]);
+  const [searchQuery, setSearchQuery] = useState("");
   const [isLoading, setIsLoading] = useState(true);
   const [movingId, setMovingId] = useState<string | null>(null);
 
@@ -97,6 +100,15 @@ export default function PipelinePage() {
           </p>
         </div>
         <div className="flex items-center gap-3">
+          <div className="relative w-48 sm:w-64">
+            <Search className="absolute left-3 top-2.5 h-3.5 w-3.5 text-white/30" />
+            <Input
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              placeholder="Search deals..."
+              className="pl-8 bg-white/[0.04] border-white/10 text-white text-xs h-9"
+            />
+          </div>
           <Link href="/matching">
             <Button variant="outline" className="border-white/10 text-white/80 hover:text-white text-xs h-9">
               <Sparkles className="mr-1.5 h-3.5 w-3.5 text-emerald-400" />
@@ -119,7 +131,13 @@ export default function PipelinePage() {
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-6 gap-4 overflow-x-auto pb-4">
           {PIPELINE_STAGES.map((col) => {
-            const colItems = items.filter((item) => item.stage === col.id);
+            const colItems = items.filter(
+              (item) =>
+                item.stage === col.id &&
+                (searchQuery === "" ||
+                  item.target_name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                  (item.target_subtitle || "").toLowerCase().includes(searchQuery.toLowerCase()))
+            );
             return (
               <div key={col.id} className="flex flex-col min-w-[200px] rounded-2xl border border-white/[0.06] bg-[#0d0d0d] p-3">
                 {/* Column Header */}

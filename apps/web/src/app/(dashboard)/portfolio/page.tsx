@@ -161,6 +161,40 @@ export default function PortfolioPage() {
           )}
         </CardContent>
       </Card>
+
+      {/* Global Scout Leaderboard */}
+      <Card className="border-white/10 bg-[#0d0d0d]">
+        <CardHeader className="p-6 border-b border-white/[0.06]">
+          <CardTitle className="text-base text-white flex items-center gap-2">
+            <Award className="h-4 w-4 text-amber-400" /> Global Scout Leaderboard
+          </CardTitle>
+          <CardDescription className="text-xs text-white/40">
+            Top predictors ranked by net virtual portfolio ROI
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="p-6 space-y-3">
+          {[
+            { rank: "#1", name: "Aarav Sharma", score: "+45.2% ROI", val: "₹14.5L", badge: "🥇 Gold Scout" },
+            { rank: "#2", name: "Priya Nair", score: "+38.7% ROI", val: "₹13.8L", badge: "🥈 Silver Scout" },
+            { rank: "#3", name: "Rohan Patel", score: "+29.4% ROI", val: "₹12.9L", badge: "🥉 Bronze Scout" },
+            { rank: "#4", name: "You (Your Account)", score: `${data?.net_return_percent.toFixed(1) || 0}% ROI`, val: currency(data?.current_portfolio_value || 1000000), badge: "🚀 Active Scout" },
+          ].map((scout) => (
+            <div key={scout.rank} className={`flex items-center justify-between p-3.5 rounded-xl border text-xs ${scout.rank === "#4" ? "border-emerald-500/40 bg-emerald-500/10 font-bold text-white" : "border-white/[0.06] bg-white/[0.02] text-white/80"}`}>
+              <div className="flex items-center gap-3">
+                <span className="font-extrabold text-amber-400 text-sm w-6">{scout.rank}</span>
+                <div>
+                  <span className="font-semibold block">{scout.name}</span>
+                  <span className="text-[10px] text-white/40">{scout.badge}</span>
+                </div>
+              </div>
+              <div className="text-right">
+                <span className="font-bold text-emerald-400 block">{scout.score}</span>
+                <span className="text-[10px] text-white/40">{scout.val}</span>
+              </div>
+            </div>
+          ))}
+        </CardContent>
+      </Card>
     </main>
   );
 }
