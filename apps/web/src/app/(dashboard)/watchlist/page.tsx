@@ -41,6 +41,27 @@ export default function WatchlistPage() {
     }
   };
 
+  const handleExportCSV = () => {
+    if (items.length === 0) return;
+    const headers = ["Title", "Type", "Subtitle", "Saved Date"];
+    const rows = items.map((i) => [
+      `"${i.title.replace(/"/g, '""')}"`,
+      i.target_type,
+      `"${(i.subtitle || "").replace(/"/g, '""')}"`,
+      new Date(i.created_at).toLocaleDateString(),
+    ]);
+
+    const csvContent = "data:text/csv;charset=utf-8," + [headers.join(","), ...rows.map((r) => r.join(","))].join("\n");
+    const encodedUri = encodeURI(csvContent);
+    const link = document.createElement("a");
+    link.setAttribute("href", encodedUri);
+    link.setAttribute("download", `BridgeCapita_Watchlist_${new Date().toISOString().slice(0, 10)}.csv`);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    toast.success("Watchlist exported to CSV!");
+  };
+
   return (
     <main className="space-y-6 pb-12">
       {/* Header */}
@@ -54,6 +75,15 @@ export default function WatchlistPage() {
             Keep track of bookmarked founders, startups, and investors to monitor their updates over time.
           </p>
         </div>
+        {items.length > 0 && (
+          <Button
+            onClick={handleExportCSV}
+            variant="outline"
+            className="border-emerald-500/30 text-emerald-400 hover:bg-emerald-500/10 text-xs font-semibold h-9"
+          >
+            Export Deal List CSV
+          </Button>
+        )}
       </div>
 
       {isLoading ? (
