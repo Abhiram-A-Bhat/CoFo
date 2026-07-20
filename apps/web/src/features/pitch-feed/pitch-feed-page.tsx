@@ -372,12 +372,12 @@ function ReelItem({ startup, isActive }: { startup: ScoredStartupDiscoveryItem; 
           <span className="text-[10px] font-semibold text-white/70">Data</span>
         </button>
 
-        {/* Virtual Angel Predict */}
-        <button onClick={handleVirtualPredict} className="flex flex-col items-center gap-1 group" title="Predict startup growth with ₹1 Lakh virtual credits">
+        {/* AngelArena Virtual Investment */}
+        <button onClick={handleVirtualPredict} className="flex flex-col items-center gap-1 group" title="Back this startup in AngelArena League with ₹1 Lakh virtual credits">
           <div className="flex h-11 w-11 items-center justify-center rounded-full bg-amber-500/20 backdrop-blur-md border border-amber-500/40 text-amber-400 group-hover:scale-110 shadow-[0_0_12px_rgba(245,158,11,0.3)] transition-all">
             <Trophy className="h-5 w-5" />
           </div>
-          <span className="text-[10px] font-bold text-amber-400">Predict</span>
+          <span className="text-[10px] font-bold text-amber-400">Arena</span>
         </button>
 
         {/* Direct Message */}

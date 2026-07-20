@@ -44,17 +44,17 @@ export default function PortfolioPage() {
       {/* Header */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-white/[0.08] pb-6">
         <div>
-          <span className="text-xs font-bold uppercase tracking-widest text-emerald-400">
-            Fantasy Investor Game
+          <span className="text-xs font-bold uppercase tracking-widest text-emerald-400 flex items-center gap-1.5">
+            <Trophy className="h-3.5 w-3.5 text-amber-400" /> AngelArena League
           </span>
-          <h1 className="text-3xl font-bold tracking-tight text-white mt-1">Virtual Angel Portfolio</h1>
+          <h1 className="text-3xl font-bold tracking-tight text-white mt-1">AngelArena</h1>
           <p className="text-xs text-white/40 mt-1 max-w-xl">
-            Test your startup scouting talent! Predict top-performing startups with ₹10 Lakhs in virtual capital and climb the leaderboard.
+            Test your startup scouting talent! Back high-potential startups with ₹10 Lakhs in virtual credits, track portfolio ROI, and climb the scout leaderboard.
           </p>
         </div>
         <Link href="/pitch-feed">
-          <Button className="bg-emerald-500 hover:bg-emerald-400 text-black font-bold text-xs h-9 px-5">
-            <Sparkles className="mr-1.5 h-3.5 w-3.5" /> Predict &amp; Back Startups
+          <Button className="bg-emerald-500 hover:bg-emerald-400 text-black font-bold text-xs h-9 px-5 shadow-[0_0_15px_rgba(16,185,129,0.3)]">
+            <Sparkles className="mr-1.5 h-3.5 w-3.5" /> Back Pitch in Arena
           </Button>
         </Link>
       </div>
