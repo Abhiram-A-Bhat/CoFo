@@ -14,6 +14,7 @@ export default function WatchlistPage() {
   const toast = useToast();
   const [items, setItems] = useState<WatchlistItem[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [filterType, setFilterType] = useState<'all' | 'startup' | 'investor'>('all');
 
   async function loadData() {
     setIsLoading(true);
@@ -41,10 +42,12 @@ export default function WatchlistPage() {
     }
   };
 
+  const filteredItems = items.filter((item) => filterType === 'all' || item.target_type === filterType);
+
   const handleExportCSV = () => {
-    if (items.length === 0) return;
+    if (filteredItems.length === 0) return;
     const headers = ["Title", "Type", "Subtitle", "Saved Date"];
-    const rows = items.map((i) => [
+    const rows = filteredItems.map((i) => [
       `"${i.title.replace(/"/g, '""')}"`,
       i.target_type,
       `"${(i.subtitle || "").replace(/"/g, '""')}"`,
@@ -65,16 +68,34 @@ export default function WatchlistPage() {
   return (
     <main className="space-y-6 pb-12">
       {/* Header */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-white/[0.08] pb-6">
-        <div>
-          <span className="text-xs font-bold uppercase tracking-widest text-emerald-400">
-            Saved Items
-          </span>
-          <h1 className="text-3xl font-bold tracking-tight text-white mt-1">Watchlist</h1>
-          <p className="text-xs text-white/40 mt-1 max-w-xl">
-            Keep track of bookmarked founders, startups, and investors to monitor their updates over time.
-          </p>
+      <div className="flex flex-col md:flex-row md:items-start justify-between gap-4 border-b border-white/[0.08] pb-6">
+        <div className="space-y-4">
+          <div>
+            <span className="text-xs font-bold uppercase tracking-widest text-emerald-400">
+              Saved Items
+            </span>
+            <h1 className="text-3xl font-bold tracking-tight text-white mt-1">Watchlist</h1>
+            <p className="text-xs text-white/40 mt-1 max-w-xl">
+              Keep track of bookmarked founders, startups, and investors to monitor their updates over time.
+            </p>
+          </div>
+          <div className="flex items-center gap-2">
+            {(['all', 'startup', 'investor'] as const).map((type) => (
+              <button
+                key={type}
+                onClick={() => setFilterType(type)}
+                className={`px-3.5 py-1.5 rounded-lg text-xs font-medium transition-all ${
+                  filterType === type
+                    ? 'bg-emerald-500/15 text-emerald-400 border border-emerald-500/30'
+                    : 'text-white/40 hover:text-white/70 hover:bg-white/[0.04] border border-transparent'
+                }`}
+              >
+                {type === 'all' ? 'All' : type === 'startup' ? 'Startups' : 'Investors'}
+              </button>
+            ))}
+          </div>
         </div>
+        
         {items.length > 0 && (
           <Button
             onClick={handleExportCSV}
@@ -96,10 +117,14 @@ export default function WatchlistPage() {
             </div>
           ))}
         </div>
-      ) : items.length > 0 ? (
+      ) : filteredItems.length > 0 ? (
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-          {items.map((item) => (
-            <Card key={item.id} className="border-white/10 bg-[#0d0d0d] hover:border-emerald-500/30 transition-all">
+          {filteredItems.map((item, index) => (
+            <Card 
+              key={item.id} 
+              className="border-white/10 bg-[#0d0d0d] hover:border-emerald-500/30 transition-all animate-card-enter"
+              style={{ animationDelay: `${index * 60}ms`, animationFillMode: 'both' }}
+            >
               <CardHeader className="p-5 pb-3 flex flex-row items-start justify-between space-y-0">
                 <div className="space-y-1 min-w-0 flex-1">
                   <div className="flex items-center gap-2">
@@ -128,9 +153,9 @@ export default function WatchlistPage() {
                       Contact
                     </Button>
                   </Link>
-                  <Link href="/pitch-feed" className="flex-1">
+                  <Link href={item.target_type === 'investor' ? `/discovery` : `/pitch-feed`} className="flex-1">
                     <Button className="w-full bg-emerald-500 hover:bg-emerald-400 text-black font-semibold text-xs h-8">
-                      View Pitch
+                      View Profile
                     </Button>
                   </Link>
                 </div>
@@ -139,20 +164,26 @@ export default function WatchlistPage() {
           ))}
         </div>
       ) : (
-        <Card className="border border-white/10 bg-[#0d0d0d]">
+        <Card className="border border-white/10 bg-[#0d0d0d] animate-card-enter">
           <CardContent className="flex flex-col items-center justify-center p-12 text-center space-y-4">
             <div className="rounded-full bg-emerald-500/10 p-4 text-emerald-400 border border-emerald-500/20">
               <Bookmark className="h-8 w-8" />
             </div>
             <div className="space-y-1">
-              <h3 className="text-base font-semibold text-white">Your Watchlist is empty</h3>
+              <h3 className="text-base font-semibold text-white">
+                {filterType === 'startup' ? 'No startups saved yet' : 
+                 filterType === 'investor' ? 'No investors saved yet' : 
+                 'Your Watchlist is empty'}
+              </h3>
               <p className="text-xs text-white/40 max-w-sm">
-                Click the bookmark icon on any pitch card or discovery profile to save startups and investors for quick access.
+                {filterType === 'all' 
+                  ? 'Click the bookmark icon on any pitch card or discovery profile to save startups and investors for quick access.'
+                  : `You haven't saved any ${filterType}s yet. Browse and save them to see them here.`}
               </p>
             </div>
-            <Link href="/pitch-feed">
+            <Link href={filterType === 'investor' ? "/discovery" : "/pitch-feed"}>
               <Button className="bg-emerald-500 hover:bg-emerald-400 text-black font-semibold text-xs px-6 h-9">
-                Browse Pitch Feed
+                Browse {filterType === 'investor' ? 'Investors' : 'Pitch Feed'}
               </Button>
             </Link>
           </CardContent>

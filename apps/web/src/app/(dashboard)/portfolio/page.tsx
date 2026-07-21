@@ -61,43 +61,43 @@ export default function PortfolioPage() {
 
       {/* Summary Cards */}
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-        <Card className="border-white/10 bg-[#0d0d0d]">
+        <Card className="border-white/10 bg-[#0d0d0d] animate-card-enter" style={{ animationDelay: '0ms' }}>
           <CardHeader className="p-5 pb-2">
             <CardTitle className="text-xs font-semibold uppercase tracking-wider text-white/40">Available Credits</CardTitle>
           </CardHeader>
           <CardContent className="p-5 pt-0">
-            {isLoading ? <Skeleton className="h-7 w-24" /> : <div className="text-xl font-bold text-emerald-400">{currency(data?.available_credits || 0)}</div>}
+            {isLoading ? <Skeleton className="h-7 w-24" /> : <div className="text-xl font-bold text-emerald-400 animate-count-fade">{currency(data?.available_credits || 0)}</div>}
             <p className="text-[11px] text-white/30 mt-1">Free virtual capital</p>
           </CardContent>
         </Card>
 
-        <Card className="border-white/10 bg-[#0d0d0d]">
+        <Card className="border-white/10 bg-[#0d0d0d] animate-card-enter" style={{ animationDelay: '80ms' }}>
           <CardHeader className="p-5 pb-2">
             <CardTitle className="text-xs font-semibold uppercase tracking-wider text-white/40">Total Invested</CardTitle>
           </CardHeader>
           <CardContent className="p-5 pt-0">
-            {isLoading ? <Skeleton className="h-7 w-24" /> : <div className="text-xl font-bold text-white">{currency(data?.total_invested || 0)}</div>}
+            {isLoading ? <Skeleton className="h-7 w-24" /> : <div className="text-xl font-bold text-white animate-count-fade" style={{ animationDelay: '200ms' }}>{currency(data?.total_invested || 0)}</div>}
             <p className="text-[11px] text-white/30 mt-1">Deployed in startup bets</p>
           </CardContent>
         </Card>
 
-        <Card className="border-white/10 bg-[#0d0d0d]">
+        <Card className="border-white/10 bg-[#0d0d0d] animate-card-enter" style={{ animationDelay: '160ms' }}>
           <CardHeader className="p-5 pb-2">
             <CardTitle className="text-xs font-semibold uppercase tracking-wider text-white/40">Portfolio Value</CardTitle>
           </CardHeader>
           <CardContent className="p-5 pt-0">
-            {isLoading ? <Skeleton className="h-7 w-24" /> : <div className="text-xl font-bold text-sky-400">{currency(data?.current_portfolio_value || 0)}</div>}
+            {isLoading ? <Skeleton className="h-7 w-24" /> : <div className="text-xl font-bold text-sky-400 animate-count-fade" style={{ animationDelay: '300ms' }}>{currency(data?.current_portfolio_value || 0)}</div>}
             <p className="text-[11px] text-white/30 mt-1">Current valuation</p>
           </CardContent>
         </Card>
 
-        <Card className="border-white/10 bg-[#0d0d0d]">
+        <Card className="border-white/10 bg-[#0d0d0d] animate-card-enter" style={{ animationDelay: '240ms' }}>
           <CardHeader className="p-5 pb-2">
             <CardTitle className="text-xs font-semibold uppercase tracking-wider text-white/40">Net Return</CardTitle>
           </CardHeader>
           <CardContent className="p-5 pt-0">
             {isLoading ? <Skeleton className="h-7 w-20" /> : (
-              <div className={`text-xl font-bold ${data && data.net_return_percent >= 0 ? "text-emerald-400" : "text-red-400"}`}>
+              <div className={`text-xl font-bold animate-count-fade ${data && data.net_return_percent >= 0 ? "text-emerald-400" : "text-red-400"}`} style={{ animationDelay: '400ms' }}>
                 {data?.net_return_percent.toFixed(1)}%
               </div>
             )}

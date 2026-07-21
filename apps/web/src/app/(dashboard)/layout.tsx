@@ -260,11 +260,11 @@ export default function DashboardLayout({ children }: { children: ReactNode }) {
                   href={item.href}
                   className={`flex items-center gap-4 rounded-xl px-4 py-3 text-[13px] font-medium transition-all duration-200 ${
                     isActive
-                      ? "bg-white/[0.08] text-white font-semibold"
+                      ? "bg-emerald-500/10 text-white font-semibold border border-emerald-500/20"
                       : "text-white/50 hover:bg-white/[0.04] hover:text-white"
                   }`}
                 >
-                  <Icon className={`h-4 w-4 ${isActive ? "text-emerald-400 scale-110" : ""}`} />
+                  <Icon className={`h-4 w-4 ${isActive ? "text-emerald-400" : ""}`} />
                   {item.label}
                 </Link>
               );
@@ -331,7 +331,7 @@ export default function DashboardLayout({ children }: { children: ReactNode }) {
 
       {/* Main Content Area */}
       <main className="relative z-10 flex-1 md:pl-64 pb-20 md:pb-0 pt-14 md:pt-0">
-        <div className={`mx-auto px-4 py-6 md:px-8 transition-all duration-300 ${
+        <div key={pathname} className={`mx-auto px-4 py-6 md:px-8 animate-page-enter ${
           pathname.includes("pitch-feed") || pathname.includes("startup-discovery") || pathname.includes("pipeline") || pathname.includes("insights")
             ? "max-w-7xl"
             : "max-w-5xl"

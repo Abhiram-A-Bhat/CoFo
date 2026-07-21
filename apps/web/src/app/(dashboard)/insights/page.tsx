@@ -45,46 +45,46 @@ export default function InsightsPage() {
 
       {/* Stats Cards */}
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-        <Card className="border-white/10 bg-[#0d0d0d]">
+        <Card className="border-white/10 bg-[#0d0d0d] animate-card-enter" style={{ animationDelay: '0ms' }}>
           <CardHeader className="p-5 pb-2 flex flex-row items-center justify-between space-y-0">
             <CardTitle className="text-xs font-semibold uppercase tracking-wider text-white/40">Total Startups</CardTitle>
             <Building2 className="h-4 w-4 text-emerald-400" />
           </CardHeader>
           <CardContent className="p-5 pt-0">
-            {isLoading ? <Skeleton className="h-7 w-20" /> : <div className="text-2xl font-bold text-white">{data?.total_startups}</div>}
+            {isLoading ? <Skeleton className="h-7 w-20" /> : <div className="text-2xl font-bold text-white animate-count-fade">{data?.total_startups}</div>}
             <p className="text-[11px] text-white/30 mt-1">Actively seeking capital</p>
           </CardContent>
         </Card>
 
-        <Card className="border-white/10 bg-[#0d0d0d]">
+        <Card className="border-white/10 bg-[#0d0d0d] animate-card-enter" style={{ animationDelay: '80ms' }}>
           <CardHeader className="p-5 pb-2 flex flex-row items-center justify-between space-y-0">
             <CardTitle className="text-xs font-semibold uppercase tracking-wider text-white/40">Active Investors</CardTitle>
             <Users className="h-4 w-4 text-sky-400" />
           </CardHeader>
           <CardContent className="p-5 pt-0">
-            {isLoading ? <Skeleton className="h-7 w-20" /> : <div className="text-2xl font-bold text-white">{data?.total_investors}</div>}
+            {isLoading ? <Skeleton className="h-7 w-20" /> : <div className="text-2xl font-bold text-white animate-count-fade" style={{ animationDelay: '100ms' }}>{data?.total_investors}</div>}
             <p className="text-[11px] text-white/30 mt-1">Angels, VCs &amp; Syndicates</p>
           </CardContent>
         </Card>
 
-        <Card className="border-white/10 bg-[#0d0d0d]">
+        <Card className="border-white/10 bg-[#0d0d0d] animate-card-enter" style={{ animationDelay: '160ms' }}>
           <CardHeader className="p-5 pb-2 flex flex-row items-center justify-between space-y-0">
             <CardTitle className="text-xs font-semibold uppercase tracking-wider text-white/40">Avg. Valuation</CardTitle>
             <TrendingUp className="h-4 w-4 text-amber-400" />
           </CardHeader>
           <CardContent className="p-5 pt-0">
-            {isLoading ? <Skeleton className="h-7 w-24" /> : <div className="text-lg font-bold text-emerald-400">{formatCurrency(data?.avg_valuation_inr || 0)}</div>}
+            {isLoading ? <Skeleton className="h-7 w-24" /> : <div className="text-lg font-bold text-emerald-400 animate-count-fade" style={{ animationDelay: '200ms' }}>{formatCurrency(data?.avg_valuation_inr || 0)}</div>}
             <p className="text-[11px] text-white/30 mt-1">Median startup valuation benchmark</p>
           </CardContent>
         </Card>
 
-        <Card className="border-white/10 bg-[#0d0d0d]">
+        <Card className="border-white/10 bg-[#0d0d0d] animate-card-enter" style={{ animationDelay: '240ms' }}>
           <CardHeader className="p-5 pb-2 flex flex-row items-center justify-between space-y-0">
             <CardTitle className="text-xs font-semibold uppercase tracking-wider text-white/40">Avg. Raise Target</CardTitle>
             <Activity className="h-4 w-4 text-purple-400" />
           </CardHeader>
           <CardContent className="p-5 pt-0">
-            {isLoading ? <Skeleton className="h-7 w-24" /> : <div className="text-lg font-bold text-purple-400">{formatCurrency(data?.avg_funding_required_inr || 0)}</div>}
+            {isLoading ? <Skeleton className="h-7 w-24" /> : <div className="text-lg font-bold text-purple-400 animate-count-fade" style={{ animationDelay: '300ms' }}>{formatCurrency(data?.avg_funding_required_inr || 0)}</div>}
             <p className="text-[11px] text-white/30 mt-1">Average check size requested</p>
           </CardContent>
         </Card>
@@ -93,7 +93,7 @@ export default function InsightsPage() {
       {/* Breakdown Section */}
       <div className="grid gap-6 md:grid-cols-2">
         {/* Top Sectors */}
-        <Card className="border-white/10 bg-[#0d0d0d]">
+        <Card className="border-white/10 bg-[#0d0d0d] animate-card-enter" style={{ animationDelay: '350ms' }}>
           <CardHeader className="p-6 pb-4 border-b border-white/[0.06]">
             <CardTitle className="text-base text-white flex items-center gap-2">
               <BarChart3 className="h-4 w-4 text-emerald-400" />
@@ -110,7 +110,7 @@ export default function InsightsPage() {
               </div>
             ) : (data?.top_industries || []).length > 0 ? (
               (data?.top_industries || []).map((item, idx) => (
-                <div key={idx} className="flex items-center justify-between p-3 rounded-xl border border-white/[0.06] bg-white/[0.02]">
+                <div key={idx} className="flex items-center justify-between p-3 rounded-xl border border-white/[0.06] bg-white/[0.02] animate-card-enter" style={{ animationDelay: `${400 + idx * 60}ms` }}>
                   <span className="text-xs font-semibold text-white capitalize">{item.industry}</span>
                   <Badge variant="outline" className="border-emerald-500/30 text-emerald-400 text-xs">
                     {item.count} startups
@@ -124,7 +124,7 @@ export default function InsightsPage() {
         </Card>
 
         {/* Platform Match Engine Analytics */}
-        <Card className="border-white/10 bg-[#0d0d0d]">
+        <Card className="border-white/10 bg-[#0d0d0d] animate-card-enter" style={{ animationDelay: '450ms' }}>
           <CardHeader className="p-6 pb-4 border-b border-white/[0.06]">
             <CardTitle className="text-base text-white flex items-center gap-2">
               <Sparkles className="h-4 w-4 text-sky-400" />

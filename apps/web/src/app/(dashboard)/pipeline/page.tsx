@@ -123,7 +123,7 @@ export default function PipelinePage() {
 
       {/* Summary KPI Strip */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3 sm:gap-4">
-        <div className="rounded-2xl border border-white/[0.06] bg-[#0d0d0d] p-4 flex items-center justify-between">
+        <div className="rounded-2xl border border-white/[0.06] bg-[#0d0d0d] p-4 flex items-center justify-between animate-card-enter" style={{ animationDelay: '0ms' }}>
           <div>
             <span className="text-[11px] font-medium text-white/40 block">Total Pipeline Deals</span>
             <span className="text-xl font-extrabold text-white mt-0.5 block">{totalDeals}</span>
@@ -133,7 +133,7 @@ export default function PipelinePage() {
           </div>
         </div>
 
-        <div className="rounded-2xl border border-white/[0.06] bg-[#0d0d0d] p-4 flex items-center justify-between">
+        <div className="rounded-2xl border border-white/[0.06] bg-[#0d0d0d] p-4 flex items-center justify-between animate-card-enter" style={{ animationDelay: '80ms' }}>
           <div>
             <span className="text-[11px] font-medium text-white/40 block">Meetings Scheduled</span>
             <span className="text-xl font-extrabold text-amber-400 mt-0.5 block">{activeMeetings}</span>
@@ -143,7 +143,7 @@ export default function PipelinePage() {
           </div>
         </div>
 
-        <div className="rounded-2xl border border-white/[0.06] bg-[#0d0d0d] p-4 flex items-center justify-between">
+        <div className="rounded-2xl border border-white/[0.06] bg-[#0d0d0d] p-4 flex items-center justify-between animate-card-enter" style={{ animationDelay: '160ms' }}>
           <div>
             <span className="text-[11px] font-medium text-white/40 block">Due Diligence</span>
             <span className="text-xl font-extrabold text-sky-400 mt-0.5 block">{inDiligence}</span>
@@ -153,7 +153,7 @@ export default function PipelinePage() {
           </div>
         </div>
 
-        <div className="rounded-2xl border border-white/[0.06] bg-[#0d0d0d] p-4 flex items-center justify-between">
+        <div className="rounded-2xl border border-white/[0.06] bg-[#0d0d0d] p-4 flex items-center justify-between animate-card-enter" style={{ animationDelay: '240ms' }}>
           <div>
             <span className="text-[11px] font-medium text-white/40 block">Closed Deals</span>
             <span className="text-xl font-extrabold text-emerald-400 mt-0.5 block">{closedDeals}</span>

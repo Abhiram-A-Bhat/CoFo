@@ -5,8 +5,11 @@ import { MatchScoreRing } from "@/components/match-score-ring";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
 
 import { Alert } from "@/components/ui/alert";
+import { useToast } from "@/lib/toast-context";
+import { toggleWatchlist } from "@/lib/api/retention";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
@@ -146,11 +149,11 @@ export function MatchingPage() {
         ) : activeItems.length > 0 ? (
           <div className="grid gap-4 lg:grid-cols-2">
             {mode === "investors"
-              ? investorMatches.map((match) => (
-                  <InvestorMatchCard key={match.investor_id} match={match} />
+              ? investorMatches.map((match, index) => (
+                  <InvestorMatchCard key={match.investor_id} match={match} index={index} />
                 ))
-              : startupMatches.map((match) => (
-                  <StartupMatchCard key={match.startup_id} match={match} />
+              : startupMatches.map((match, index) => (
+                  <StartupMatchCard key={match.startup_id} match={match} index={index} />
                 ))}
           </div>
         ) : (
@@ -179,9 +182,31 @@ export function MatchingPage() {
   );
 }
 
-function InvestorMatchCard({ match }: { match: InvestorMatch }) {
+function InvestorMatchCard({ match, index }: { match: InvestorMatch; index: number }) {
+  const [isPassed, setIsPassed] = useState(false);
+  const { toast } = useToast();
+
+  const handleShortlist = async () => {
+    try {
+      await toggleWatchlist('investor', match.investor_id);
+      toast.success(`Shortlisted ${match.name}`);
+    } catch (err) {
+      toast.error('Failed to shortlist');
+    }
+  };
+
+  const handlePass = () => {
+    setIsPassed(true);
+    toast.info(`Passed on ${match.name}`);
+  };
+
+  if (isPassed) return null;
+
   return (
-    <Card className="transition-all duration-300 border-white/10 hover:border-emerald-500/30 hover:shadow-[0_0_20px_rgba(16,185,129,0.05)] bg-[#0d0d0d]">
+    <Card 
+      className="transition-all duration-300 border-white/10 hover:border-emerald-500/30 hover:shadow-[0_0_30px_rgba(16,185,129,0.08)] hover:-translate-y-0.5 bg-[#0d0d0d] animate-card-enter"
+      style={{ animationDelay: `${index * 80}ms` }}
+    >
       <CardHeader className="space-y-3">
         <div className="flex items-start justify-between gap-4">
           <div className="space-y-1.5">
@@ -200,14 +225,49 @@ function InvestorMatchCard({ match }: { match: InvestorMatch }) {
           {match.investment_thesis}
         </p>
         <ReasonList reasons={match.reasons} />
+        <div className="flex items-center gap-2 pt-3 border-t border-white/[0.06]">
+          <Link href="/messages" className="flex-1">
+            <button className="w-full h-8 rounded-lg bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-[11px] font-semibold hover:bg-emerald-500/20 transition-all">
+              Message
+            </button>
+          </Link>
+          <button onClick={handleShortlist} className="h-8 px-3 rounded-lg bg-white/[0.04] border border-white/10 text-white/60 text-[11px] font-medium hover:bg-white/[0.08] hover:text-white transition-all">
+            Shortlist
+          </button>
+          <button onClick={handlePass} className="h-8 px-3 rounded-lg bg-white/[0.04] border border-white/10 text-white/60 text-[11px] font-medium hover:bg-white/[0.08] hover:text-white transition-all">
+            Pass
+          </button>
+        </div>
       </CardContent>
     </Card>
   );
 }
 
-function StartupMatchCard({ match }: { match: StartupMatch }) {
+function StartupMatchCard({ match, index }: { match: StartupMatch; index: number }) {
+  const [isPassed, setIsPassed] = useState(false);
+  const { toast } = useToast();
+
+  const handleShortlist = async () => {
+    try {
+      await toggleWatchlist('startup', match.startup_id);
+      toast.success(`Shortlisted ${match.startup_name}`);
+    } catch (err) {
+      toast.error('Failed to shortlist');
+    }
+  };
+
+  const handlePass = () => {
+    setIsPassed(true);
+    toast.info(`Passed on ${match.startup_name}`);
+  };
+
+  if (isPassed) return null;
+
   return (
-    <Card className="transition-all duration-300 border-white/10 hover:border-emerald-500/30 hover:shadow-[0_0_20px_rgba(16,185,129,0.05)] bg-[#0d0d0d]">
+    <Card 
+      className="transition-all duration-300 border-white/10 hover:border-emerald-500/30 hover:shadow-[0_0_30px_rgba(16,185,129,0.08)] hover:-translate-y-0.5 bg-[#0d0d0d] animate-card-enter"
+      style={{ animationDelay: `${index * 80}ms` }}
+    >
       <CardHeader className="space-y-3">
         <div className="flex items-start justify-between gap-4">
           <div className="space-y-1.5">
@@ -224,6 +284,19 @@ function StartupMatchCard({ match }: { match: StartupMatch }) {
       <CardContent className="space-y-4 border-t border-white/[0.06] pt-4">
         <p className="line-clamp-3 text-sm text-white/60 leading-relaxed">{match.description}</p>
         <ReasonList reasons={match.reasons} />
+        <div className="flex items-center gap-2 pt-3 border-t border-white/[0.06]">
+          <Link href="/messages" className="flex-1">
+            <button className="w-full h-8 rounded-lg bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-[11px] font-semibold hover:bg-emerald-500/20 transition-all">
+              Message
+            </button>
+          </Link>
+          <button onClick={handleShortlist} className="h-8 px-3 rounded-lg bg-white/[0.04] border border-white/10 text-white/60 text-[11px] font-medium hover:bg-white/[0.08] hover:text-white transition-all">
+            Shortlist
+          </button>
+          <button onClick={handlePass} className="h-8 px-3 rounded-lg bg-white/[0.04] border border-white/10 text-white/60 text-[11px] font-medium hover:bg-white/[0.08] hover:text-white transition-all">
+            Pass
+          </button>
+        </div>
       </CardContent>
     </Card>
   );
