@@ -332,9 +332,9 @@ export default function DashboardLayout({ children }: { children: ReactNode }) {
       {/* Main Content Area */}
       <main className="relative z-10 flex-1 md:pl-64 pb-20 md:pb-0 pt-14 md:pt-0">
         <div className={`mx-auto px-4 py-6 md:px-8 transition-all duration-300 ${
-          pathname.includes("pitch-feed") || pathname.includes("startup-discovery")
-            ? "max-w-6xl"
-            : "max-w-4xl"
+          pathname.includes("pitch-feed") || pathname.includes("startup-discovery") || pathname.includes("pipeline") || pathname.includes("insights")
+            ? "max-w-7xl"
+            : "max-w-5xl"
         }`}>
           {children}
         </div>

@@ -329,68 +329,68 @@ function ReelItem({ startup, isActive }: { startup: ScoredStartupDiscoveryItem; 
       </div>
 
       {/* Right Floating Action Icons Bar (Instagram Reels Style) */}
-      <div className="absolute right-3 bottom-20 z-20 flex flex-col items-center gap-4">
+      <div className="absolute right-2 sm:right-4 bottom-16 sm:bottom-20 z-20 flex flex-col items-center gap-2.5">
         {/* Match Score Badge */}
         {startup.matchScore !== undefined && (
-          <div className="flex flex-col items-center gap-0.5">
-            <div className="flex h-11 w-11 items-center justify-center rounded-full bg-emerald-500 text-black font-extrabold text-xs shadow-[0_0_16px_rgba(16,185,129,0.5)]">
+          <div className="flex flex-col items-center gap-0.5 mb-1">
+            <div className="flex h-9 w-9 items-center justify-center rounded-full bg-emerald-500 text-black font-extrabold text-[11px] shadow-[0_0_12px_rgba(16,185,129,0.5)]">
               {startup.matchScore}%
             </div>
-            <span className="text-[9px] font-bold uppercase text-white/60">Match</span>
+            <span className="text-[8px] font-bold uppercase tracking-wider text-white/70">Match</span>
           </div>
         )}
 
         {/* Like */}
-        <button onClick={handleLike} className="flex flex-col items-center gap-1 group">
-          <div className={`flex h-11 w-11 items-center justify-center rounded-full bg-black/40 backdrop-blur-md border transition-all active:scale-125 ${liked ? "border-red-500/40 text-red-500 bg-red-500/10 shadow-[0_0_12px_rgba(239,68,68,0.4)]" : "border-white/10 text-white/80 group-hover:text-white"}`}>
-            <Heart className="h-5 w-5" fill={liked ? "currentColor" : "none"} />
+        <button onClick={handleLike} className="flex flex-col items-center gap-0.5 group">
+          <div className={`flex h-9.5 w-9.5 sm:h-10 sm:w-10 items-center justify-center rounded-full bg-black/50 backdrop-blur-md border transition-all active:scale-125 ${liked ? "border-red-500/50 text-red-500 bg-red-500/20 shadow-[0_0_12px_rgba(239,68,68,0.4)]" : "border-white/15 text-white/80 group-hover:text-white"}`}>
+            <Heart className="h-4.5 w-4.5" fill={liked ? "currentColor" : "none"} />
           </div>
-          <span className="text-[10px] font-semibold text-white/70">{likeCount}</span>
+          <span className="text-[9px] font-semibold text-white/80">{likeCount}</span>
         </button>
 
         {/* Comments */}
-        <button onClick={handleLoadComments} className="flex flex-col items-center gap-1 group">
-          <div className={`flex h-11 w-11 items-center justify-center rounded-full bg-black/40 backdrop-blur-md border transition-all ${showComments ? "border-emerald-500/40 text-emerald-400 bg-emerald-500/10" : "border-white/10 text-white/80 group-hover:text-white"}`}>
-            <MessageSquare className="h-5 w-5" />
+        <button onClick={handleLoadComments} className="flex flex-col items-center gap-0.5 group">
+          <div className={`flex h-9.5 w-9.5 sm:h-10 sm:w-10 items-center justify-center rounded-full bg-black/50 backdrop-blur-md border transition-all ${showComments ? "border-emerald-500/50 text-emerald-400 bg-emerald-500/20" : "border-white/15 text-white/80 group-hover:text-white"}`}>
+            <MessageSquare className="h-4.5 w-4.5" />
           </div>
-          <span className="text-[10px] font-semibold text-white/70">{comments.length}</span>
+          <span className="text-[9px] font-semibold text-white/80">{comments.length}</span>
         </button>
 
         {/* Watchlist */}
-        <button onClick={handleToggleWatchlist} className="flex flex-col items-center gap-1 group">
-          <div className={`flex h-11 w-11 items-center justify-center rounded-full bg-black/40 backdrop-blur-md border transition-all active:scale-125 ${saved ? "border-emerald-500/40 text-emerald-400 bg-emerald-500/10" : "border-white/10 text-white/80 group-hover:text-white"}`}>
-            <Bookmark className="h-5 w-5" fill={saved ? "currentColor" : "none"} />
+        <button onClick={handleToggleWatchlist} className="flex flex-col items-center gap-0.5 group">
+          <div className={`flex h-9.5 w-9.5 sm:h-10 sm:w-10 items-center justify-center rounded-full bg-black/50 backdrop-blur-md border transition-all active:scale-125 ${saved ? "border-emerald-500/50 text-emerald-400 bg-emerald-500/20" : "border-white/15 text-white/80 group-hover:text-white"}`}>
+            <Bookmark className="h-4.5 w-4.5" fill={saved ? "currentColor" : "none"} />
           </div>
-          <span className="text-[10px] font-semibold text-white/70">Save</span>
+          <span className="text-[9px] font-semibold text-white/80">Save</span>
         </button>
 
         {/* Financial Metrics Sheet Toggle */}
-        <button onClick={() => setShowMetrics(!showMetrics)} className="flex flex-col items-center gap-1 group">
-          <div className={`flex h-11 w-11 items-center justify-center rounded-full bg-black/40 backdrop-blur-md border transition-all ${showMetrics ? "border-sky-500/40 text-sky-400 bg-sky-500/10" : "border-white/10 text-white/80 group-hover:text-white"}`}>
-            <TrendingUp className="h-5 w-5" />
+        <button onClick={() => setShowMetrics(!showMetrics)} className="flex flex-col items-center gap-0.5 group">
+          <div className={`flex h-9.5 w-9.5 sm:h-10 sm:w-10 items-center justify-center rounded-full bg-black/50 backdrop-blur-md border transition-all ${showMetrics ? "border-sky-500/50 text-sky-400 bg-sky-500/20" : "border-white/15 text-white/80 group-hover:text-white"}`}>
+            <TrendingUp className="h-4.5 w-4.5" />
           </div>
-          <span className="text-[10px] font-semibold text-white/70">Data</span>
+          <span className="text-[9px] font-semibold text-white/80">Data</span>
         </button>
 
         {/* AngelArena Virtual Investment */}
-        <button onClick={handleVirtualPredict} className="flex flex-col items-center gap-1 group" title="Back this startup in AngelArena League with ₹1 Lakh virtual credits">
-          <div className="flex h-11 w-11 items-center justify-center rounded-full bg-amber-500/20 backdrop-blur-md border border-amber-500/40 text-amber-400 group-hover:scale-110 shadow-[0_0_12px_rgba(245,158,11,0.3)] transition-all">
-            <Trophy className="h-5 w-5" />
+        <button onClick={handleVirtualPredict} className="flex flex-col items-center gap-0.5 group" title="Back this startup in AngelArena League with ₹1 Lakh virtual credits">
+          <div className="flex h-9.5 w-9.5 sm:h-10 sm:w-10 items-center justify-center rounded-full bg-amber-500/25 backdrop-blur-md border border-amber-500/50 text-amber-400 group-hover:scale-110 shadow-[0_0_12px_rgba(245,158,11,0.3)] transition-all">
+            <Trophy className="h-4.5 w-4.5" />
           </div>
-          <span className="text-[10px] font-bold text-amber-400">Arena</span>
+          <span className="text-[9px] font-bold text-amber-400">Arena</span>
         </button>
 
         {/* Direct Message */}
-        <Link href="/messages" className="flex flex-col items-center gap-1 group">
-          <div className="flex h-11 w-11 items-center justify-center rounded-full bg-black/40 backdrop-blur-md border border-white/10 text-white/80 group-hover:text-emerald-400 transition-all">
-            <Send className="h-5 w-5" />
+        <Link href="/messages" className="flex flex-col items-center gap-0.5 group">
+          <div className="flex h-9.5 w-9.5 sm:h-10 sm:w-10 items-center justify-center rounded-full bg-black/50 backdrop-blur-md border border-white/15 text-white/80 group-hover:text-emerald-400 transition-all">
+            <Send className="h-4.5 w-4.5" />
           </div>
-          <span className="text-[10px] font-semibold text-white/70">Chat</span>
+          <span className="text-[9px] font-semibold text-white/80">Chat</span>
         </Link>
       </div>
 
       {/* Bottom Content Info Overlay */}
-      <div className="absolute bottom-0 left-0 right-14 p-4 pb-6 bg-gradient-to-t from-black/95 via-black/60 to-transparent z-10 space-y-2 pointer-events-auto">
+      <div className="absolute bottom-0 left-0 right-14 p-3.5 sm:p-5 pb-5 bg-gradient-to-t from-black/95 via-black/70 to-transparent z-10 space-y-1.5 pointer-events-auto">
         <div className="flex items-center gap-2">
           <div className="flex h-7 w-7 items-center justify-center rounded-full bg-emerald-500/20 border border-emerald-500/30 text-emerald-400 font-extrabold text-xs">
             {startup.startup_name.slice(0, 2).toUpperCase()}
