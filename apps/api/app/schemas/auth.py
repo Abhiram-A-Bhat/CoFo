@@ -64,3 +64,26 @@ class UpdateProfileRequest(BaseModel):
             raise ValueError("Password must include at least one capital (uppercase) letter.")
         return value
 
+
+class ForgotPasswordRequest(BaseModel):
+    email: EmailStr
+
+
+class VerifyOtpRequest(BaseModel):
+    email: EmailStr
+    otp_code: str = Field(min_length=6, max_length=6)
+
+
+class ResetPasswordRequest(BaseModel):
+    email: EmailStr
+    otp_code: str = Field(min_length=6, max_length=6)
+    new_password: str = Field(min_length=8, max_length=128)
+
+    @field_validator("new_password")
+    @classmethod
+    def validate_new_password_strength(cls, value: str) -> str:
+        if not any(character.isupper() for character in value):
+            raise ValueError("Password must include at least one capital (uppercase) letter.")
+        return value
+
+

@@ -73,3 +73,22 @@ export function getGoogleAuthUrl(): string {
   const base = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8000";
   return `${base}/api/v1/auth/google`;
 }
+
+export async function forgotPassword(email: string) {
+  const response = await apiClient.post<{ message: string }>("/auth/forgot-password", { email });
+  return response.data;
+}
+
+export async function verifyOtp(email: string, otpCode: string) {
+  const response = await apiClient.post<{ message: string }>("/auth/verify-otp", { email, otp_code: otpCode });
+  return response.data;
+}
+
+export async function resetPassword(payload: { email: string; otp_code: string; new_password: string }) {
+  const response = await apiClient.post<{ message: string }>("/auth/reset-password", {
+    email: payload.email,
+    otp_code: payload.otp_code,
+    new_password: payload.new_password,
+  });
+  return response.data;
+}

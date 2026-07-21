@@ -14,6 +14,7 @@ from app.models.watchlist_item import WatchlistItem
 from app.models.notification import Notification
 from app.models.endorsement import Endorsement
 from app.models.virtual_investment import VirtualInvestment
+from app.models.otp_verification import OtpVerification
 
 __all__ = [
     "InvestorProfile",
@@ -32,4 +33,5 @@ __all__ = [
     "Notification",
     "Endorsement",
     "VirtualInvestment",
+    "OtpVerification",
 ]

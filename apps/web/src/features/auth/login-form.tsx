@@ -3,6 +3,7 @@
 import { Loader2 } from "lucide-react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { FormEvent, useEffect, useState } from "react";
+import Link from "next/link";
 
 import { login, getGoogleAuthUrl } from "@/lib/api/auth";
 import { getApiErrorMessage } from "@/lib/api/errors";
@@ -133,9 +134,17 @@ export function LoginForm() {
         </div>
 
         <div className="space-y-1.5">
-          <label htmlFor="password" className="block text-[13px] font-medium text-white/60">
-            Password
-          </label>
+          <div className="flex items-center justify-between">
+            <label htmlFor="password" className="block text-[13px] font-medium text-white/60">
+              Password
+            </label>
+            <Link
+              href="/forgot-password"
+              className="text-[12px] font-medium text-emerald-400 hover:text-emerald-300 transition-colors"
+            >
+              Forgot password?
+            </Link>
+          </div>
           <input
             autoComplete="current-password"
             id="password"
