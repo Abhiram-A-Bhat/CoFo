@@ -14,7 +14,7 @@ class Settings(BaseSettings):
 
     jwt_secret_key: str
     jwt_algorithm: str = "HS256"
-    access_token_expire_minutes: int = 30
+    access_token_expire_minutes: int = 525600
     auth_cookie_name: str = "fundflow_access_token"
     auth_cookie_secure: bool = False
     auth_cookie_samesite: str = "lax"
@@ -22,10 +22,6 @@ class Settings(BaseSettings):
     public_media_path: str = "/media"
     max_pitch_video_bytes: int = 150 * 1024 * 1024
 
-    # Google OAuth
-    google_client_id: str = ""
-    google_client_secret: str = ""
-    google_redirect_uri: str = "http://localhost:8000/api/v1/auth/google/callback"
     frontend_url: str = "http://localhost:3000"
 
     model_config = SettingsConfigDict(

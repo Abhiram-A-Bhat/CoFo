@@ -9,7 +9,6 @@ export type AuthUser = {
   active_workspace: "founder" | "investor" | null;
   is_active: boolean;
   created_at: string;
-  google_id?: string | null;
 };
 
 export type AuthResponse = {
@@ -66,12 +65,6 @@ export type UpdateProfilePayload = {
 export async function updateProfile(payload: UpdateProfilePayload) {
   const response = await apiClient.patch<AuthUser>("/auth/me", payload);
   return response.data;
-}
-
-/** Returns the URL to redirect the browser to for Google OAuth sign-in. */
-export function getGoogleAuthUrl(): string {
-  const base = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8000";
-  return `${base}/api/v1/auth/google`;
 }
 
 export async function forgotPassword(email: string) {

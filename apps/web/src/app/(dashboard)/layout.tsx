@@ -28,6 +28,7 @@ import { listConversations } from "@/lib/api/messaging";
 import { CommandPalette } from "@/components/command-palette";
 import { NotificationBell } from "@/components/notification-bell";
 import { KeyboardShortcutsModal } from "@/components/keyboard-shortcuts-modal";
+import ThemeToggle from "@/components/ThemeToggle";
 
 export default function DashboardLayout({ children }: { children: ReactNode }) {
   const router = useRouter();
@@ -300,13 +301,16 @@ export default function DashboardLayout({ children }: { children: ReactNode }) {
                   </p>
                 </div>
               </div>
-              <button
-                onClick={handleLogout}
-                title="Log out"
-                className="text-white/40 hover:text-red-400 transition-colors p-1"
-              >
-                <LogOut className="h-4 w-4" />
-              </button>
+              <div className="flex items-center gap-1">
+                <ThemeToggle />
+                <button
+                  onClick={handleLogout}
+                  title="Log out"
+                  className="text-white/40 hover:text-red-400 transition-colors p-1"
+                >
+                  <LogOut className="h-4 w-4" />
+                </button>
+              </div>
             </div>
           </div>
         </div>
@@ -323,6 +327,7 @@ export default function DashboardLayout({ children }: { children: ReactNode }) {
         <div className="flex items-center gap-2">
           <NotificationBell />
 
+          <ThemeToggle />
           <Link href="/settings" className="text-white/60 hover:text-white p-2 rounded-xl hover:bg-white/[0.04] transition-colors">
             <Settings className="h-4.5 w-4.5" />
           </Link>

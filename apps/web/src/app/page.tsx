@@ -2,6 +2,8 @@
 
 import Link from "next/link";
 import { useEffect, useRef, useState, type ReactNode } from "react";
+import AnimatedCounter from "@/components/AnimatedCounter";
+import { getMe } from "@/lib/api/auth";
 import {
   ArrowRight,
   TrendingUp,
@@ -18,52 +20,7 @@ import {
 } from "lucide-react";
 import { WaveBackground } from "@/components/wave-background";
 
-// ─────────────────────────────────────────────
-// ANIMATED COUNTER HOOK
-// ─────────────────────────────────────────────
-function useAnimatedCounter(target: number, duration = 1500) {
-  const [count, setCount] = useState(0);
-  const [started, setStarted] = useState(false);
-  const ref = useRef<HTMLDivElement>(null);
 
-  useEffect(() => {
-    const el = ref.current;
-    if (!el) return;
-
-    const obs = new IntersectionObserver(
-      ([entry]) => {
-        if (entry.isIntersecting && !started) {
-          setStarted(true);
-        }
-      },
-      { threshold: 0.3 }
-    );
-    obs.observe(el);
-    return () => obs.disconnect();
-  }, [started]);
-
-  useEffect(() => {
-    if (!started) return;
-
-    let frame: number;
-    const start = performance.now();
-
-    function animate(now: number) {
-      const elapsed = now - start;
-      const progress = Math.min(elapsed / duration, 1);
-      const eased = 1 - Math.pow(1 - progress, 3);
-      setCount(Math.round(target * eased));
-      if (progress < 1) {
-        frame = requestAnimationFrame(animate);
-      }
-    }
-
-    frame = requestAnimationFrame(animate);
-    return () => cancelAnimationFrame(frame);
-  }, [started, target, duration]);
-
-  return { count, ref };
-}
 
 // ─────────────────────────────────────────────
 // SCROLL-REVEAL WRAPPER
@@ -245,6 +202,29 @@ const faqs = [
 // ─────────────────────────────────────────────
 export default function HomePage() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [targetWorkspace, setTargetWorkspace] = useState("/pitch-feed");
+
+  useEffect(() => {
+    const token = typeof window !== "undefined" ? localStorage.getItem("fundflow_access_token") : null;
+    if (token) {
+      getMe()
+        .then((user) => {
+          setIsLoggedIn(true);
+          const saved = localStorage.getItem("fundflow_active_workspace");
+          if (user.role === "unassigned") {
+            setTargetWorkspace("/choose-interface");
+          } else if (saved === "investor" || (user.role === "investor" && !saved)) {
+            setTargetWorkspace("/startup-discovery");
+          } else {
+            setTargetWorkspace("/pitch-feed");
+          }
+        })
+        .catch(() => {
+          setIsLoggedIn(false);
+        });
+    }
+  }, []);
 
   return (
     <div className="min-h-screen bg-[#0a0a0a] text-white selection:bg-white/10">
@@ -269,18 +249,29 @@ export default function HomePage() {
 
           {/* CTA + mobile toggle */}
           <div className="flex items-center gap-3">
-            <Link
-              href="/login"
-              className="hidden sm:block text-[13px] font-medium text-white/60 hover:text-white transition-colors px-3 py-1.5"
-            >
-              Log in
-            </Link>
-            <Link
-              href="/signup"
-              className="inline-flex h-8 items-center gap-1.5 rounded-lg bg-white px-4 text-[13px] font-semibold text-[#0a0a0a] hover:bg-white/90 transition-colors"
-            >
-              Get started <ChevronRight className="h-3.5 w-3.5" />
-            </Link>
+            {isLoggedIn ? (
+              <Link
+                href={targetWorkspace}
+                className="inline-flex h-8 items-center gap-1.5 rounded-lg bg-emerald-500 px-4 text-[13px] font-semibold text-black hover:bg-emerald-400 transition-colors shadow-[0_0_20px_rgba(16,185,129,0.3)]"
+              >
+                Go to Workspace <ArrowRight className="h-3.5 w-3.5" />
+              </Link>
+            ) : (
+              <>
+                <Link
+                  href="/login"
+                  className="hidden sm:block text-[13px] font-medium text-white/60 hover:text-white transition-colors px-3 py-1.5"
+                >
+                  Log in
+                </Link>
+                <Link
+                  href="/signup"
+                  className="inline-flex h-8 items-center gap-1.5 rounded-lg bg-white px-4 text-[13px] font-semibold text-[#0a0a0a] hover:bg-white/90 transition-colors"
+                >
+                  Get started <ChevronRight className="h-3.5 w-3.5" />
+                </Link>
+              </>
+            )}
             {/* Mobile hamburger */}
             <button
               className="md:hidden p-1.5 rounded-lg text-white/50 hover:text-white hover:bg-white/[0.05] transition-colors"
@@ -344,35 +335,51 @@ export default function HomePage() {
 
           <ScrollReveal delay={300}>
             <div className="mt-10 flex flex-col sm:flex-row items-center justify-center gap-3">
-              <Link
-                href="/signup"
-                className="group inline-flex h-12 items-center gap-2 rounded-xl bg-white px-7 text-[15px] font-semibold text-[#0a0a0a] hover:bg-white/90 transition-all hover:shadow-[0_0_32px_rgba(255,255,255,0.15)]"
-              >
-                Create free account <ArrowRight className="h-4 w-4 group-hover:translate-x-0.5 transition-transform" />
-              </Link>
-              <Link
-                href="/login"
-                className="inline-flex h-12 items-center gap-2 rounded-xl border border-white/10 bg-white/[0.04] px-7 text-[15px] font-medium text-white/70 hover:bg-white/[0.08] hover:text-white transition-all"
-              >
-                Sign in to your workspace
-              </Link>
+              {isLoggedIn ? (
+                <>
+                  <Link
+                    href={targetWorkspace}
+                    className="group inline-flex h-12 items-center gap-2 rounded-xl bg-emerald-500 px-7 text-[15px] font-semibold text-black hover:bg-emerald-400 transition-all hover:shadow-[0_0_32px_rgba(16,185,129,0.3)]"
+                  >
+                    Go to Workspace <ArrowRight className="h-4 w-4 group-hover:translate-x-0.5 transition-transform" />
+                  </Link>
+                  <Link
+                    href="/matching"
+                    className="inline-flex h-12 items-center gap-2 rounded-xl border border-white/10 bg-white/[0.04] px-7 text-[15px] font-medium text-white/70 hover:bg-white/[0.08] hover:text-white transition-all"
+                  >
+                    View Matches
+                  </Link>
+                </>
+              ) : (
+                <>
+                  <Link
+                    href="/signup"
+                    className="group inline-flex h-12 items-center gap-2 rounded-xl bg-white px-7 text-[15px] font-semibold text-[#0a0a0a] hover:bg-white/90 transition-all hover:shadow-[0_0_32px_rgba(255,255,255,0.15)]"
+                  >
+                    Create free account <ArrowRight className="h-4 w-4 group-hover:translate-x-0.5 transition-transform" />
+                  </Link>
+                  <Link
+                    href="/login"
+                    className="inline-flex h-12 items-center gap-2 rounded-xl border border-white/10 bg-white/[0.04] px-7 text-[15px] font-medium text-white/70 hover:bg-white/[0.08] hover:text-white transition-all"
+                  >
+                    Sign in to your workspace
+                  </Link>
+                </>
+              )}
             </div>
           </ScrollReveal>
 
           {/* Animated Stats bar */}
           <ScrollReveal delay={400}>
             <div className="mx-auto mt-20 grid max-w-3xl grid-cols-2 gap-px sm:grid-cols-4 rounded-2xl overflow-hidden border border-white/[0.08] bg-white/[0.04]">
-              {stats.map((s) => {
-                const counter = useAnimatedCounter(s.numericValue);
-                return (
-                  <div key={s.label} ref={counter.ref} className="flex flex-col items-center justify-center py-6 px-4">
-                    <span className="text-2xl font-bold tracking-tight">
-                      {s.prefix}{counter.count}{s.suffix}
-                    </span>
-                    <span className="mt-1 text-[12px] text-white/40 font-medium">{s.label}</span>
-                  </div>
-                );
-              })}
+              {stats.map((s) => (
+                <div key={s.label} className="flex flex-col items-center justify-center py-6 px-4">
+                  <span className="text-2xl font-bold tracking-tight">
+                    {s.prefix}<AnimatedCounter value={s.numericValue} />{s.suffix}
+                  </span>
+                  <span className="mt-1 text-[12px] text-white/40 font-medium">{s.label}</span>
+                </div>
+              ))}
             </div>
           </ScrollReveal>
         </div>

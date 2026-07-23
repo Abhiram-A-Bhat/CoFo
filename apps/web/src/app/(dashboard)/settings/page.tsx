@@ -6,11 +6,7 @@ import {
   User, 
   Lock, 
   LogOut, 
-  Settings, 
   Briefcase,
-  ChevronRight,
-  ShieldCheck,
-  Bell,
   Eye,
   EyeOff
 } from "lucide-react";
@@ -26,7 +22,6 @@ import {
   CardHeader, 
   CardTitle 
 } from "@/components/ui/card";
-import { Alert } from "@/components/ui/alert";
 
 export default function SettingsPage() {
   const router = useRouter();
@@ -219,12 +214,6 @@ export default function SettingsPage() {
                         <Briefcase className="h-3 w-3" />
                         {user?.role}
                       </span>
-                      {user?.google_id && (
-                        <span className="inline-flex items-center gap-1 rounded-full bg-sky-500/10 border border-sky-500/20 px-2 py-0.5 text-[10px] font-medium text-sky-400">
-                          <ShieldCheck className="h-2.5 w-2.5" />
-                          Google linked
-                        </span>
-                      )}
                     </div>
                   </div>
                   <div className="mt-4 pt-4 border-t border-white/[0.06] grid grid-cols-3 gap-3">
